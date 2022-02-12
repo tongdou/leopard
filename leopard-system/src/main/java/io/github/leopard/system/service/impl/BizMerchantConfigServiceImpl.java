@@ -2,7 +2,6 @@ package io.github.leopard.system.service.impl;
 
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.zjiecode.wxpusher.client.bean.CreateQrcodeReq;
 import com.zjiecode.wxpusher.client.bean.CreateQrcodeResp;
@@ -113,7 +112,7 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService {
      */
     @Override
     public void updateWxUidByLeopardUid(String leopardUid, String wxUid) {
-        bizMerchantConfigMapper.updateWxUidByLeopardUid(leopardUid,wxUid);
+        bizMerchantConfigMapper.updateWxUidByLeopardUid(Integer.valueOf(leopardUid),wxUid);
     }
 
     /**

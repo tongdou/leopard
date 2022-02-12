@@ -58,7 +58,7 @@ public interface BizMerchantConfigMapper
      * @param leopardUid
      * @param wxUid
      */
-    void updateWxUidByLeopardUid(@Param("leopardUid") String leopardUid,@Param("wxUid") String wxUid);
+    void updateWxUidByLeopardUid(@Param("leopardUid") Integer leopardUid,@Param("wxUid") String wxUid);
 
     /**
      * 批量删除商户信息配置
