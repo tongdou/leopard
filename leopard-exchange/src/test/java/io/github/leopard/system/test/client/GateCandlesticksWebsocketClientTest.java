@@ -1,8 +1,8 @@
-package io.github.leopard.system.test;
+package io.github.leopard.system.test.client;
 
-import io.github.leopard.exchange.model.dto.TickDTO;
+import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
-import io.github.leopard.exchange.websocket.GateCandlesticksWebsocketClient;
+import io.github.leopard.exchange.client.websocket.GateCandlesticksWebsocketClient;
 import java.net.URISyntaxException;
 
 /**
@@ -15,8 +15,8 @@ public class GateCandlesticksWebsocketClientTest {
         new GateCandlesticksWebsocketClient(CandlesticksIntervalEnum.S_10, "BTC_USDT") {
 
             @Override
-            protected void onTick(TickDTO tickDTO) {
-                System.out.println(tickDTO.ToJSON());
+            protected void onTick(CandlestickResultDTO candlestickResultDTO) {
+                System.out.println(candlestickResultDTO.ToJSON());
             }
         }.subscribe();
 

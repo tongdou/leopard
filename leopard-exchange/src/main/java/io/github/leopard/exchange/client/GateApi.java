@@ -1,27 +1,39 @@
 package io.github.leopard.exchange.client;
 
+import com.google.common.collect.Lists;
 import io.gate.gateapi.ApiClient;
 import io.gate.gateapi.ApiException;
 import io.gate.gateapi.Configuration;
 import io.gate.gateapi.api.SpotApi;
+import io.gate.gateapi.api.SpotApi.APIlistCandlesticksRequest;
 import io.gate.gateapi.models.Order;
 import io.gate.gateapi.models.SpotPricePutOrder;
 import io.gate.gateapi.models.SpotPricePutOrder.AccountEnum;
 import io.gate.gateapi.models.SpotPriceTrigger;
 import io.gate.gateapi.models.SpotPriceTrigger.RuleEnum;
 import io.gate.gateapi.models.SpotPriceTriggeredOrder;
+import io.gate.gateapi.models.Ticker;
+import io.github.leopard.common.utils.DateFormatEnum;
+import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
 import io.github.leopard.exchange.model.dto.UserSecretDTO;
+import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
+import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
+import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotPriceTriggeredOrderResultDTO;
+import io.github.leopard.exchange.model.dto.result.TickResultDTO;
 import io.github.leopard.exchange.model.enums.OrderStatusEnum;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 /**
  * GATE交易
@@ -31,7 +43,7 @@ import org.slf4j.LoggerFactory;
 public class GateApi {
 
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private UserSecretDTO userSecretDTO;
 
@@ -107,6 +119,86 @@ public class GateApi {
         }
     }
 
+
+    /**
+     * 查询蜡烛图
+     */
+    protected List<CandlestickResultDTO> listCandlesticksCore(CandlestickRequestDTO request) throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        final APIlistCandlesticksRequest client = apiInstance
+                .listCandlesticks(request.getMarket())
+                .interval(request.getIntervalEnum().getValue());
+        if (Objects.nonNull(request.getLimit())) {
+            client.limit(request.getLimit());
+        } else {
+            client.from(DateFormatEnum.DATETIME_DEFAULT.parseToUtilDate(request.getFrom()).getTime() / 1000);
+            client.to(DateFormatEnum.DATETIME_DEFAULT.parseToUtilDate(request.getTo()).getTime() / 1000);
+        }
+        try {
+            List<CandlestickResultDTO> resultDTO = Lists.newArrayList();
+            List<List<String>> response = client.execute();
+            for (List<String> tickString : response) {
+                String timestamp = tickString.get(0); //unix时间戳
+                String volume = tickString.get(1);  //交易额，计价货币 USDT等
+                String close = tickString.get(2); //收盘价
+                String highest = tickString.get(3); //最高价
+                String lowest = tickString.get(4); //最低价
+                String open = tickString.get(5); //开盘价
+                CandlestickResultDTO tickDTO = new CandlestickResultDTO();
+                tickDTO.setMarket(request.getMarket());
+                tickDTO.setVolumeString(volume);
+                tickDTO.setCloseString(close);
+                tickDTO.setHighestString(highest);
+                tickDTO.setLowestString(lowest);
+                tickDTO.setOpenString(open);
+                tickDTO.setTimestampString(timestamp);
+                tickDTO.setDateTimeString(DateFormatEnum.DATETIME_DEFAULT.formatTimestamp(timestamp));
+                tickDTO.setDateTime(DateFormatEnum.DATETIME_DEFAULT.parseTimestampToLocalDatetime(timestamp));
+                tickDTO.setVolume(new BigDecimal(volume));
+                tickDTO.setClose(new BigDecimal(close));
+                tickDTO.setHighest(new BigDecimal(highest));
+                tickDTO.setLowest(new BigDecimal(lowest));
+                tickDTO.setOpen(new BigDecimal(open));
+                tickDTO.setClose(new BigDecimal(close));
+                resultDTO.add(tickDTO);
+            }
+            return resultDTO;
+        } catch (ApiException e) {
+            log.warn("[查询蜡烛图]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
+            }
+        }
+    }
+
+    /**
+     * 获取Ticker信息
+     */
+    protected TickResultDTO getTickerCore(TickRequestDTO requestDTO) throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            final List<Ticker> tickers = apiInstance.listTickers().currencyPair(requestDTO.getMarket()).execute();
+            if (CollectionUtils.isEmpty(tickers)) {
+                return null;
+            }
+            Ticker ticker = tickers.get(0);
+            TickResultDTO resultDTO = new TickResultDTO();
+            BeanUtils.copyProperties(ticker, resultDTO);
+            resultDTO.setMarket(ticker.getCurrencyPair());
+            return resultDTO;
+        } catch (ApiException e) {
+            log.warn("[查询Ticker]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
+            }
+        }
+    }
 
     /**
      * 创建现货API
