@@ -107,12 +107,15 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService {
 
     /**
      * 根据商户id更新wxuid
-     * @param leopardUid
+     * @param merchantConfigId
      * @param wxUid
      */
     @Override
-    public void updateWxUidByLeopardUid(String leopardUid, String wxUid) {
-        bizMerchantConfigMapper.updateWxUidByLeopardUid(Integer.valueOf(leopardUid),wxUid);
+    public void updateWxUidById(String merchantConfigId, String wxUid) {
+        BizMerchantConfig bizMerchantConfig = new BizMerchantConfig();
+        bizMerchantConfig.setId(Long.valueOf(merchantConfigId));
+        bizMerchantConfig.setWxUid(EncryptorUtil.stringEncryptor().encrypt(wxUid));
+        bizMerchantConfigMapper.updateBizMerchantConfig(bizMerchantConfig);
     }
 
     /**

@@ -54,13 +54,6 @@ public interface BizMerchantConfigMapper
     public int deleteBizMerchantConfigById(Long id);
 
     /**
-     * 根据商户id更新wxuid
-     * @param leopardUid
-     * @param wxUid
-     */
-    void updateWxUidByLeopardUid(@Param("leopardUid") Integer leopardUid,@Param("wxUid") String wxUid);
-
-    /**
      * 批量删除商户信息配置
      * 
      * @param ids 需要删除的数据主键集合

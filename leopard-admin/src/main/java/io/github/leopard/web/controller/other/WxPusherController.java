@@ -38,10 +38,9 @@ public class WxPusherController {
                 //关注公众号的回调
                 if (action.equals(BaseCallBackReq.ACTION_APP_SUBSCRIBE)) {
                     AppSubscribeBean data = JSON.parseObject(JSON.toJSONString(baseCallBackReq.getData()),AppSubscribeBean.class);
-                    String leopardUid = data.getExtra();
+                    String merchantConfigId = data.getExtra();
                     String wxUid = data.getUid();
-
-                    bizMerchantConfigService.updateWxUidByLeopardUid(leopardUid, wxUid);
+                    bizMerchantConfigService.updateWxUidById(merchantConfigId, wxUid);
                 }
                 //TODO 其它指令回调send_up_cmd
             }

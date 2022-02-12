@@ -83,10 +83,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where id = #{id}
     </update>
 
-    <update id="updateWxUidByLeopardUid">
-        update biz_merchant_config set wx_uid = #{wxUid}  where uid = #{leopardUid}
-
-    </update>
     <delete id="deleteBizMerchantConfigById" parameterType="Long">
         delete from biz_merchant_config where id = #{id}
     </delete>
