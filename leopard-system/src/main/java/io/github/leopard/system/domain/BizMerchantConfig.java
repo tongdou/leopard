@@ -41,6 +41,11 @@ public class BizMerchantConfig extends BaseEntity {
         this.id = id;
     }
 
+    /**
+     * 生成的二维码地址
+     */
+    private String qrCodeUrl;
+
     public Long getId() 
     {
         return id;
@@ -89,6 +94,14 @@ public class BizMerchantConfig extends BaseEntity {
     public String getIsDeleted() 
     {
         return isDeleted;
+    }
+
+    public String getQrCodeUrl() {
+        return qrCodeUrl;
+    }
+
+    public void setQrCodeUrl(String qrCodeUrl) {
+        this.qrCodeUrl = qrCodeUrl;
     }
 
     @Override

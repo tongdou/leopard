@@ -1,6 +1,7 @@
 package io.github.leopard.system.mapper;
 
 import io.github.leopard.system.domain.BizMerchantConfig;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -51,6 +52,13 @@ public interface BizMerchantConfigMapper
      * @return 结果
      */
     public int deleteBizMerchantConfigById(Long id);
+
+    /**
+     * 根据商户id更新wxuid
+     * @param leopardUid
+     * @param wxUid
+     */
+    void updateWxUidByLeopardUid(@Param("leopardUid") String leopardUid,@Param("wxUid") String wxUid);
 
     /**
      * 批量删除商户信息配置
