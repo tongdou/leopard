@@ -1,4 +1,4 @@
-package io.github.leopard.exchange.model.dto;
+package io.github.leopard.exchange.model.dto.result;
 
 import io.github.leopard.common.utils.ToJSON;
 import java.math.BigDecimal;
@@ -11,7 +11,7 @@ import lombok.Data;
  * @author <a href="mailto:fuwei13@xdf.cn">pleuvoir</a>
  */
 @Data
-public class TickDTO implements ToJSON {
+public class CandlestickResultDTO implements ToJSON {
 
     private String market; //交易对
     private String timestampString; //unix时间戳

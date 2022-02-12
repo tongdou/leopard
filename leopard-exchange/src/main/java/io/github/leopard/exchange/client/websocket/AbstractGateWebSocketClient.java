@@ -1,4 +1,4 @@
-package io.github.leopard.exchange.websocket;
+package io.github.leopard.exchange.client.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

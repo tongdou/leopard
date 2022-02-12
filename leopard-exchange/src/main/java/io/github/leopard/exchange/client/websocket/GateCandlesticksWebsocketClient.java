@@ -1,10 +1,10 @@
-package io.github.leopard.exchange.websocket;
+package io.github.leopard.exchange.client.websocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.github.leopard.common.utils.DateFormatEnum;
+import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
-import io.github.leopard.exchange.model.dto.TickDTO;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import lombok.Getter;
@@ -37,7 +37,7 @@ public abstract class GateCandlesticksWebsocketClient extends AbstractGateWebSoc
         String open = source.getString("o"); //开盘价
         String desc = source.getString("n"); //描述
 
-        TickDTO tickDTO = new TickDTO();
+        CandlestickResultDTO tickDTO = new CandlestickResultDTO();
         tickDTO.setMarket(this.getMarket());
         tickDTO.setVolumeString(volume);
         tickDTO.setCloseString(close);
@@ -62,7 +62,7 @@ public abstract class GateCandlesticksWebsocketClient extends AbstractGateWebSoc
     }
 
 
-    protected abstract void onTick(TickDTO tickDTO);
+    protected abstract void onTick(CandlestickResultDTO candlestickResultDTO);
 
 
 }
