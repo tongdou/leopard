@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('订单信息列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>通道名称：</label>
+                                <select name="channelName" th:with="type=${@dict.getType('t_channel_names')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
+                                <label>订单状态：</label>
+                                <select name="status" th:with="type=${@dict.getType('t_order_status')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
+                                <label>市场：</label>
+                                <input type="text" name="market"/>
+                            </li>
+                            <li>
+                                <label>买卖方：</label>
+                                <select name="side" th:with="type=${@dict.getType('t_order_side')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
+                                <label>自定义订单信息：</label>
+                                <input type="text" name="text"/>
+                            </li>
+                            <li>
+                                <label>交易所订单号：</label>
+                                <input type="text" name="resultOrderId"/>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:order:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:order:remove')}]];
+        var channelNameDatas = [[${@dict.getType('t_channel_names')}]];
+        var statusDatas = [[${@dict.getType('t_order_status')}]];
+        var sideDatas = [[${@dict.getType('t_order_side')}]];
+        var prefix = ctx + "order/order";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                modalName: "订单信息",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: '主键',
+                    visible: false
+                },
+                {
+                    field: 'channelName',
+                    title: '通道名称',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(channelNameDatas, value);
+                    }
+                },
+                {
+                    field: 'status',
+                    title: '订单状态',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(statusDatas, value);
+                    }
+                },
+                {
+                    field: 'market',
+                    title: '市场'
+                },
+                {
+                    field: 'quoteAmt',
+                    title: '计价货币委托金额'
+                },
+                {
+                    field: 'tokenAmt',
+                    title: '标准货币数量'
+                },
+                {
+                    field: 'orderPrice',
+                    title: '下单价格'
+                },
+                {
+                    field: 'side',
+                    title: '买卖方',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(sideDatas, value);
+                    }
+                },
+                {
+                    field: 'text',
+                    title: '自定义订单信息'
+                },
+                {
+                    field: 'resultOrderId',
+                    title: '交易所订单号'
+                },
+                {
+                    field: 'createTime',
+                    title: '创建时间'
+                },
+                {
+                    field: 'updateTime',
+                    title: '更新时间'
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package io.github.leopard.framework.web.service;
+package io.github.leopard.system.service;
 
 import io.github.leopard.common.core.domain.entity.SysDictData;
 import java.util.List;

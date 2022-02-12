@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.leopard.system.mapper.BizOrderMapper">
+    
+    <resultMap type="BizOrder" id="BizOrderResult">
+        <result property="id"    column="id"    />
+        <result property="uid"    column="uid"    />
+        <result property="channelName"    column="channel_name"    />
+        <result property="status"    column="status"    />
+        <result property="market"    column="market"    />
+        <result property="quoteAmt"    column="quote_amt"    />
+        <result property="tokenAmt"    column="token_amt"    />
+        <result property="orderPrice"    column="order_price"    />
+        <result property="side"    column="side"    />
+        <result property="text"    column="text"    />
+        <result property="resultOrderId"    column="result_order_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectBizOrderVo">
+        select id, uid, channel_name, status, market, quote_amt, token_amt, order_price, side, text, result_order_id, create_time, update_time from biz_order
+    </sql>
+
+    <select id="selectBizOrderList" parameterType="BizOrder" resultMap="BizOrderResult">
+        <include refid="selectBizOrderVo"/>
+        <where>  
+            <if test="uid != null  and uid != ''"> and uid = #{uid}</if>
+            <if test="channelName != null  and channelName != ''"> and channel_name = #{channelName}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="market != null  and market != ''"> and market = #{market}</if>
+            <if test="side != null  and side != ''"> and side = #{side}</if>
+            <if test="text != null  and text != ''"> and text = #{text}</if>
+            <if test="resultOrderId != null  and resultOrderId != ''"> and result_order_id = #{resultOrderId}</if>
+        </where>
+    </select>
+    
+    <select id="selectBizOrderById" parameterType="String" resultMap="BizOrderResult">
+        <include refid="selectBizOrderVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertBizOrder" parameterType="BizOrder" useGeneratedKeys="true" keyProperty="id">
+        insert into biz_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="channelName != null">channel_name,</if>
+            <if test="status != null">status,</if>
+            <if test="market != null">market,</if>
+            <if test="quoteAmt != null">quote_amt,</if>
+            <if test="tokenAmt != null">token_amt,</if>
+            <if test="orderPrice != null">order_price,</if>
+            <if test="side != null">side,</if>
+            <if test="text != null">text,</if>
+            <if test="resultOrderId != null">result_order_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uid != null">#{uid},</if>
+            <if test="channelName != null">#{channelName},</if>
+            <if test="status != null">#{status},</if>
+            <if test="market != null">#{market},</if>
+            <if test="quoteAmt != null">#{quoteAmt},</if>
+            <if test="tokenAmt != null">#{tokenAmt},</if>
+            <if test="orderPrice != null">#{orderPrice},</if>
+            <if test="side != null">#{side},</if>
+            <if test="text != null">#{text},</if>
+            <if test="resultOrderId != null">#{resultOrderId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBizOrder" parameterType="BizOrder">
+        update biz_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="channelName != null">channel_name = #{channelName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="market != null">market = #{market},</if>
+            <if test="quoteAmt != null">quote_amt = #{quoteAmt},</if>
+            <if test="tokenAmt != null">token_amt = #{tokenAmt},</if>
+            <if test="orderPrice != null">order_price = #{orderPrice},</if>
+            <if test="side != null">side = #{side},</if>
+            <if test="text != null">text = #{text},</if>
+            <if test="resultOrderId != null">result_order_id = #{resultOrderId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBizOrderById" parameterType="String">
+        delete from biz_order where id = #{id}
+    </delete>
+
+    <delete id="deleteBizOrderByIds" parameterType="String">
+        delete from biz_order where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

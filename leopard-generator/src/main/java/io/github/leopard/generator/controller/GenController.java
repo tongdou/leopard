@@ -199,7 +199,7 @@ public class GenController extends BaseController
     {
         try
         {
-            SqlUtil.filterKeyword(sql);
+          //  SqlUtil.filterKeyword(sql);
             List<SQLStatement> sqlStatements = SQLUtils.parseStatements(sql, DbType.mysql);
             List<String> tableNames = new ArrayList<>();
             for (SQLStatement sqlStatement : sqlStatements)
