@@ -19,7 +19,7 @@ import io.github.leopard.common.exception.user.UserNotExistsException;
 import io.github.leopard.common.exception.user.UserPasswordNotMatchException;
 import io.github.leopard.common.utils.MessageUtils;
 import io.github.leopard.common.utils.ShiroUtils;
-import io.github.leopard.exchange.service.ISysUserService;
+import io.github.leopard.system.service.ISysUserService;
 
 /**
  * 登录校验方法

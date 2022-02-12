@@ -2,7 +2,7 @@ package io.github.leopard.framework.web.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import io.github.leopard.exchange.service.ISysConfigService;
+import io.github.leopard.system.service.ISysConfigService;
 
 /**
  * RuoYi首创 html调用 thymeleaf 实现参数管理

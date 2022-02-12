@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.annotation.Log;
 import io.github.leopard.common.core.page.TableDataInfo;
 import io.github.leopard.common.utils.poi.ExcelUtil;
-import io.github.leopard.exchange.domain.SysLogininfor;
-import io.github.leopard.exchange.service.ISysLogininforService;
+import io.github.leopard.system.domain.SysLogininfor;
+import io.github.leopard.system.service.ISysLogininforService;
 
 /**
  * 系统访问记录

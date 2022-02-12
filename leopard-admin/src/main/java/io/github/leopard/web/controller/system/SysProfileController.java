@@ -23,7 +23,7 @@ import io.github.leopard.common.config.LeopardConfig;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.common.utils.file.FileUploadUtils;
-import io.github.leopard.exchange.service.ISysUserService;
+import io.github.leopard.system.service.ISysUserService;
 
 /**
  * 个人信息 业务处理

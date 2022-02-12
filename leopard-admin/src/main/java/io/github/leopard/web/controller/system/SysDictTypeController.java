@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.poi.ExcelUtil;
-import io.github.leopard.exchange.service.ISysDictTypeService;
+import io.github.leopard.system.service.ISysDictTypeService;
 
 /**
  * 数据字典信息

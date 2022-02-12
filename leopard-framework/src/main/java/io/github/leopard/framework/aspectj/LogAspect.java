@@ -24,7 +24,7 @@ import com.alibaba.fastjson.support.spring.PropertyPreFilters;
 import io.github.leopard.common.annotation.Log;
 import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.framework.manager.factory.AsyncFactory;
-import io.github.leopard.exchange.domain.SysOperLog;
+import io.github.leopard.system.domain.SysOperLog;
 
 /**
  * 操作日志记录处理

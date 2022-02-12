@@ -6,8 +6,8 @@ import java.io.Serializable;
 import org.apache.shiro.session.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import io.github.leopard.exchange.domain.SysUserOnline;
-import io.github.leopard.exchange.service.ISysUserOnlineService;
+import io.github.leopard.system.domain.SysUserOnline;
+import io.github.leopard.system.service.ISysUserOnlineService;
 
 /**
  * 会话db操作处理

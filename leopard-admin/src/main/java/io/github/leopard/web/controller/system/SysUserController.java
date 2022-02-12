@@ -28,9 +28,9 @@ import org.springframework.web.multipart.MultipartFile;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.common.utils.poi.ExcelUtil;
-import io.github.leopard.exchange.service.ISysPostService;
-import io.github.leopard.exchange.service.ISysRoleService;
-import io.github.leopard.exchange.service.ISysUserService;
+import io.github.leopard.system.service.ISysPostService;
+import io.github.leopard.system.service.ISysRoleService;
+import io.github.leopard.system.service.ISysUserService;
 
 /**
  * 用户信息

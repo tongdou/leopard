@@ -4,8 +4,8 @@ import io.github.leopard.common.core.domain.entity.SysDictData;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import io.github.leopard.exchange.service.ISysDictDataService;
-import io.github.leopard.exchange.service.ISysDictTypeService;
+import io.github.leopard.system.service.ISysDictDataService;
+import io.github.leopard.system.service.ISysDictTypeService;
 
 /**
  * RuoYi首创 html调用 thymeleaf 实现字典读取

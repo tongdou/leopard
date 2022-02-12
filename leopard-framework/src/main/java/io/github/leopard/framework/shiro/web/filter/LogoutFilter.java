@@ -14,7 +14,7 @@ import io.github.leopard.common.constant.Constants;
 import io.github.leopard.common.utils.MessageUtils;
 import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.common.utils.spring.SpringUtils;
-import io.github.leopard.exchange.service.ISysUserOnlineService;
+import io.github.leopard.system.service.ISysUserOnlineService;
 
 /**
  * 退出过滤器

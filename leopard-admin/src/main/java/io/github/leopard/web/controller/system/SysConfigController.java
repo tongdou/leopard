@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.poi.ExcelUtil;
-import io.github.leopard.exchange.domain.SysConfig;
-import io.github.leopard.exchange.service.ISysConfigService;
+import io.github.leopard.system.domain.SysConfig;
+import io.github.leopard.system.service.ISysConfigService;
 
 /**
  * 参数配置 信息操作处理

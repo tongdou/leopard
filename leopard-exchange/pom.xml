@@ -17,6 +17,13 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>io.gate</groupId>
+            <artifactId>gate-api</artifactId>
+            <version>6.23.2</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- 通用工具-->
         <dependency>
             <groupId>io.github.road</groupId>

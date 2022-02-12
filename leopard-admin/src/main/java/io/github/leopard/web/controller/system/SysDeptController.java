@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.constant.UserConstants;
-import io.github.leopard.exchange.service.ISysDeptService;
+import io.github.leopard.system.service.ISysDeptService;
 
 /**
  * 部门信息

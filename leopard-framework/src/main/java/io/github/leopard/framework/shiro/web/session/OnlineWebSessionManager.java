@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import io.github.leopard.common.constant.ShiroConstants;
 import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.common.utils.spring.SpringUtils;
-import io.github.leopard.exchange.domain.SysUserOnline;
-import io.github.leopard.exchange.service.ISysUserOnlineService;
+import io.github.leopard.system.domain.SysUserOnline;
+import io.github.leopard.system.service.ISysUserOnlineService;
 
 /**
  * 主要是在此如果会话的属性修改了 就标识下其修改了 然后方便 OnlineSessionDao同步

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import io.github.leopard.exchange.domain.SysNotice;
-import io.github.leopard.exchange.service.ISysNoticeService;
+import io.github.leopard.system.domain.SysNotice;
+import io.github.leopard.system.service.ISysNoticeService;
 
 /**
  * 公告 信息操作处理

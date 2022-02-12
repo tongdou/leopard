@@ -29,8 +29,8 @@ import io.github.leopard.common.exception.user.UserNotExistsException;
 import io.github.leopard.common.exception.user.UserPasswordNotMatchException;
 import io.github.leopard.common.exception.user.UserPasswordRetryLimitExceedException;
 import io.github.leopard.common.utils.ShiroUtils;
-import io.github.leopard.exchange.service.ISysMenuService;
-import io.github.leopard.exchange.service.ISysRoleService;
+import io.github.leopard.system.service.ISysMenuService;
+import io.github.leopard.system.service.ISysRoleService;
 
 /**
  * 自定义Realm 处理登录 权限

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import io.github.leopard.exchange.service.ISysConfigService;
+import io.github.leopard.system.service.ISysConfigService;
 
 /**
  * 注册验证

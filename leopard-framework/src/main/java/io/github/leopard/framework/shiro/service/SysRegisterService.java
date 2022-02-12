@@ -13,7 +13,7 @@ import io.github.leopard.common.constant.ShiroConstants;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.MessageUtils;
 import io.github.leopard.common.utils.ShiroUtils;
-import io.github.leopard.exchange.service.ISysUserService;
+import io.github.leopard.system.service.ISysUserService;
 
 /**
  * 注册校验方法

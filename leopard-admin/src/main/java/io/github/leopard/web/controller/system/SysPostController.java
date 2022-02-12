@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.poi.ExcelUtil;
-import io.github.leopard.exchange.domain.SysPost;
-import io.github.leopard.exchange.service.ISysPostService;
+import io.github.leopard.system.domain.SysPost;
+import io.github.leopard.system.service.ISysPostService;
 
 /**
  * 岗位信息操作处理

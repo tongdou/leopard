@@ -11,12 +11,12 @@ import io.github.leopard.common.utils.LogUtils;
 import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.common.utils.spring.SpringUtils;
 import io.github.leopard.framework.shiro.session.OnlineSession;
-import io.github.leopard.exchange.domain.SysLogininfor;
-import io.github.leopard.exchange.domain.SysOperLog;
-import io.github.leopard.exchange.domain.SysUserOnline;
-import io.github.leopard.exchange.service.ISysOperLogService;
-import io.github.leopard.exchange.service.ISysUserOnlineService;
-import io.github.leopard.exchange.service.impl.SysLogininforServiceImpl;
+import io.github.leopard.system.domain.SysLogininfor;
+import io.github.leopard.system.domain.SysOperLog;
+import io.github.leopard.system.domain.SysUserOnline;
+import io.github.leopard.system.service.ISysOperLogService;
+import io.github.leopard.system.service.ISysUserOnlineService;
+import io.github.leopard.system.service.impl.SysLogininforServiceImpl;
 import eu.bitwalker.useragentutils.UserAgent;
 
 /**

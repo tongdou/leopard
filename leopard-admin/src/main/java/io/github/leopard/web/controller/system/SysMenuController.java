@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.constant.UserConstants;
 import io.github.leopard.common.utils.ShiroUtils;
-import io.github.leopard.exchange.service.ISysMenuService;
+import io.github.leopard.system.service.ISysMenuService;
 
 /**
  * 菜单信息

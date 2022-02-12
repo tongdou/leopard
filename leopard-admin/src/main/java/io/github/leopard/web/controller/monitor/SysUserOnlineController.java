@@ -19,8 +19,8 @@ import io.github.leopard.common.core.page.TableDataInfo;
 import io.github.leopard.common.core.text.Convert;
 import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.framework.shiro.session.OnlineSessionDAO;
-import io.github.leopard.exchange.domain.SysUserOnline;
-import io.github.leopard.exchange.service.ISysUserOnlineService;
+import io.github.leopard.system.domain.SysUserOnline;
+import io.github.leopard.system.service.ISysUserOnlineService;
 
 /**
  * 在线用户监控

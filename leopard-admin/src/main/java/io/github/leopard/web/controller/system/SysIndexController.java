@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import io.github.leopard.common.config.LeopardConfig;
 import io.github.leopard.common.constant.ShiroConstants;
-import io.github.leopard.exchange.service.ISysConfigService;
-import io.github.leopard.exchange.service.ISysMenuService;
+import io.github.leopard.system.service.ISysConfigService;
+import io.github.leopard.system.service.ISysMenuService;
 
 /**
  * 首页 业务处理
