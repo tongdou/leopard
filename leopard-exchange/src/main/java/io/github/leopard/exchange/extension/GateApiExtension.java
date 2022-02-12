@@ -158,6 +158,19 @@ public class GateApiExtension extends GateApi {
     }
 
     /**
+     * 获取最新的蜡烛图，一根K线
+     * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
+     */
+    public CandlestickResultDTO candlestickRecentMust(String market, CandlesticksIntervalEnum intervalEnum) {
+        CandlestickRequestDTO requestDTO = new CandlestickRequestDTO();
+        requestDTO.setMarket(market);
+        requestDTO.setIntervalEnum(intervalEnum);
+        requestDTO.setLimit(1);
+        return listCandlestickMust(requestDTO).get(0);
+    }
+
+
+    /**
      * 获取上一个周期的蜡烛图
      * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
      */

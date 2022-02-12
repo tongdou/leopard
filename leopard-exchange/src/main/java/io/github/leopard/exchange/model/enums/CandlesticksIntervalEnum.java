@@ -1,6 +1,7 @@
 package io.github.leopard.exchange.model.enums;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * K线周期
@@ -27,5 +28,14 @@ public enum CandlesticksIntervalEnum {
 
     CandlesticksIntervalEnum(String value) {
         this.value = value;
+    }
+
+    public static CandlesticksIntervalEnum toEnum(String value) {
+        for (CandlesticksIntervalEnum item : CandlesticksIntervalEnum.values()) {
+            if (StringUtils.equals(value, item.getValue())) {
+                return item;
+            }
+        }
+        return null;
     }
 }
