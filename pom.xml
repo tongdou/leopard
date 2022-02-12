@@ -208,6 +208,12 @@
                 <version>${leopard.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>io.github.road</groupId>
+                <artifactId>leopard-exchange</artifactId>
+                <version>${leopard.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -219,6 +225,7 @@
         <module>leopard-generator</module>
         <module>leopard-common</module>
         <module>leopard-exchange</module>
+        <module>leopard-core</module>
     </modules>
     <packaging>pom</packaging>
 

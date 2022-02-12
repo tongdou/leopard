@@ -47,7 +47,7 @@ import org.springframework.util.CollectionUtils;
  *
  * @author <a href="mailto:fuwei13@xdf.cn">pleuvoir</a>
  */
-public class GateApi {
+public class GateApi implements IExchangeApi{
 
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
