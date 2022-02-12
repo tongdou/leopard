@@ -45,6 +45,12 @@ public interface IBizMerchantConfigService
     public int updateBizMerchantConfig(BizMerchantConfig bizMerchantConfig);
 
     /**
+     * 根据商户id更新wxuid
+     * @param leopardUid
+     * @param wxUid
+     */
+    void updateWxUidByLeopardUid(String leopardUid,String wxUid);
+    /**
      * 批量删除商户信息配置
      * 
      * @param ids 需要删除的商户信息配置主键集合
