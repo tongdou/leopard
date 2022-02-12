@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.leopard.system.mapper.BizStrategyMapper">
+    
+    <resultMap type="BizStrategy" id="BizStrategyResult">
+        <result property="id"    column="id"    />
+        <result property="strategyName"    column="strategy_name"    />
+        <result property="beanName"    column="bean_name"    />
+        <result property="className"    column="class_name"    />
+        <result property="configJson"    column="config_json"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectBizStrategyVo">
+        select id, strategy_name, bean_name, class_name, config_json, create_by, remark, create_time, update_time from biz_strategy
+    </sql>
+
+    <select id="selectBizStrategyList" parameterType="BizStrategy" resultMap="BizStrategyResult">
+        <include refid="selectBizStrategyVo"/>
+        <where>  
+            <if test="strategyName != null  and strategyName != ''"> and strategy_name like concat('%', #{strategyName}, '%')</if>
+            <if test="beanName != null  and beanName != ''"> and bean_name like concat('%', #{beanName}, '%')</if>
+            <if test="className != null  and className != ''"> and class_name like concat('%', #{className}, '%')</if>
+            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
+        </where>
+    </select>
+    
+    <select id="selectBizStrategyById" parameterType="String" resultMap="BizStrategyResult">
+        <include refid="selectBizStrategyVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertBizStrategy" parameterType="BizStrategy" useGeneratedKeys="true" keyProperty="id">
+        insert into biz_strategy
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="strategyName != null and strategyName != ''">strategy_name,</if>
+            <if test="beanName != null and beanName != ''">bean_name,</if>
+            <if test="className != null and className != ''">class_name,</if>
+            <if test="configJson != null and configJson != ''">config_json,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="strategyName != null and strategyName != ''">#{strategyName},</if>
+            <if test="beanName != null and beanName != ''">#{beanName},</if>
+            <if test="className != null and className != ''">#{className},</if>
+            <if test="configJson != null and configJson != ''">#{configJson},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBizStrategy" parameterType="BizStrategy">
+        update biz_strategy
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="strategyName != null and strategyName != ''">strategy_name = #{strategyName},</if>
+            <if test="beanName != null and beanName != ''">bean_name = #{beanName},</if>
+            <if test="className != null and className != ''">class_name = #{className},</if>
+            <if test="configJson != null and configJson != ''">config_json = #{configJson},</if>
+            <if test="createBy != null and createBy != ''">create_by = #{createBy},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBizStrategyById" parameterType="String">
+        delete from biz_strategy where id = #{id}
+    </delete>
+
+    <delete id="deleteBizStrategyByIds" parameterType="String">
+        delete from biz_strategy where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
