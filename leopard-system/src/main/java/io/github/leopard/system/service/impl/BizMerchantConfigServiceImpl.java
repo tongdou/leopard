@@ -2,6 +2,7 @@ package io.github.leopard.system.service.impl;
 
 import io.github.leopard.common.core.text.Convert;
 import io.github.leopard.common.utils.DateUtils;
+import io.github.leopard.common.utils.security.EncryptorUtil;
 import io.github.leopard.system.domain.BizMerchantConfig;
 import io.github.leopard.system.mapper.BizMerchantConfigMapper;
 import io.github.leopard.system.service.IBizMerchantConfigService;
@@ -55,6 +56,10 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService
     @Override
     public int insertBizMerchantConfig(BizMerchantConfig bizMerchantConfig)
     {
+        //秘钥信息加密
+        bizMerchantConfig.setGateApiKey(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateApiKey()));
+        bizMerchantConfig.setGateSecret(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateSecret()));
+        bizMerchantConfig.setWxUid(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getWxUid()));
         bizMerchantConfig.setCreateTime(DateUtils.getNowDate());
         return bizMerchantConfigMapper.insertBizMerchantConfig(bizMerchantConfig);
     }
@@ -68,6 +73,10 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService
     @Override
     public int updateBizMerchantConfig(BizMerchantConfig bizMerchantConfig)
     {
+        //秘钥信息加密
+        bizMerchantConfig.setGateApiKey(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateApiKey()));
+        bizMerchantConfig.setGateSecret(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateSecret()));
+        bizMerchantConfig.setWxUid(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getWxUid()));
         bizMerchantConfig.setUpdateTime(DateUtils.getNowDate());
         return bizMerchantConfigMapper.updateBizMerchantConfig(bizMerchantConfig);
     }
