@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class CreateSpotOrderRequestDTO {
 
-    private String market;
+    private String market; //btc_usdt
     private BigDecimal price; //委托价格
     private BigDecimal tokenAmt;//委托token数量
     private SideEnum sideEnum; //委托方向

@@ -6,7 +6,9 @@ import io.gate.gateapi.ApiException;
 import io.gate.gateapi.Configuration;
 import io.gate.gateapi.api.SpotApi;
 import io.gate.gateapi.api.SpotApi.APIlistCandlesticksRequest;
+import io.gate.gateapi.models.CurrencyPair;
 import io.gate.gateapi.models.Order;
+import io.gate.gateapi.models.SpotAccount;
 import io.gate.gateapi.models.SpotPricePutOrder;
 import io.gate.gateapi.models.SpotPricePutOrder.AccountEnum;
 import io.gate.gateapi.models.SpotPriceTrigger;
@@ -20,15 +22,20 @@ import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
 import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
+import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;
+import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
 import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
+import io.github.leopard.exchange.model.dto.result.CurrencyPairResultDTO;
+import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotPriceTriggeredOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.TickResultDTO;
 import io.github.leopard.exchange.model.enums.OrderStatusEnum;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -50,6 +57,110 @@ public class GateApi {
     protected GateApi(UserSecretDTO userSecretDTO) {
         this.userSecretDTO = userSecretDTO;
     }
+
+
+    /**
+     * 查询单个币种信息
+     */
+    protected CurrencyPairResultDTO currencyPairsCore(CurrencyPairRequestDTO requestDTO) throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            CurrencyPair response = apiInstance.getCurrencyPair(requestDTO.getPair());
+            CurrencyPairResultDTO resultDTO = new CurrencyPairResultDTO();
+            BeanUtils.copyProperties(response, resultDTO);
+            return resultDTO;
+        } catch (ApiException e) {
+            log.warn("[查询单个币种信息]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
+            }
+        }
+    }
+
+
+    /**
+     * 查询所有币种信息
+     */
+    protected List<CurrencyPairResultDTO> listCurrencyPairsCore() throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            List<CurrencyPairResultDTO> result = new ArrayList<>();
+            List<CurrencyPair> response = apiInstance.listCurrencyPairs();
+            for (CurrencyPair pair : response) {
+                CurrencyPairResultDTO resultDTO = new CurrencyPairResultDTO();
+                BeanUtils.copyProperties(pair, resultDTO);
+                result.add(resultDTO);
+            }
+            return result;
+        } catch (ApiException e) {
+            log.warn("[查询所有币种信息]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
+            }
+        }
+    }
+
+
+    /**
+     * 查询现货账户
+     */
+    protected SpotAccountResultDTO spotAccountCore(SpotAccountRequestDTO request) throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            List<SpotAccount> response = apiInstance.listSpotAccounts().currency(request.getCurrency())
+                    .execute();
+            SpotAccount account = response.get(0);
+            SpotAccountResultDTO accountResultDTO = new SpotAccountResultDTO();
+            accountResultDTO.setAvailable(new BigDecimal(Objects.requireNonNull(account.getAvailable())));
+            accountResultDTO.setCurrency(account.getCurrency());
+            accountResultDTO.setLocked(new BigDecimal(Objects.requireNonNull(account.getLocked())));
+            return accountResultDTO;
+        } catch (ApiException e) {
+            log.warn("[查询现货账户]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
+            }
+        }
+    }
+
+
+    /**
+     * 查询现货账户
+     */
+    protected List<SpotAccountResultDTO> listSpotAccountsCore() throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            List<SpotAccountResultDTO> result = new ArrayList<>();
+            List<SpotAccount> response = apiInstance.listSpotAccounts()
+                    .execute();
+            for (SpotAccount account : response) {
+                SpotAccountResultDTO accountResultDTO = new SpotAccountResultDTO();
+                accountResultDTO.setAvailable(new BigDecimal(Objects.requireNonNull(account.getAvailable())));
+                accountResultDTO.setCurrency(account.getCurrency());
+                accountResultDTO.setLocked(new BigDecimal(Objects.requireNonNull(account.getLocked())));
+                result.add(accountResultDTO);
+            }
+            return result;
+        } catch (ApiException e) {
+            log.warn("[查询现货账户]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
+            }
+        }
+    }
+
 
     /**
      * 创建现货触发订单
@@ -175,7 +286,7 @@ public class GateApi {
     }
 
     /**
-     * 获取Ticker信息
+     * 获取单个Ticker信息
      */
     protected TickResultDTO getTickerCore(TickRequestDTO requestDTO) throws ExchangeApiException {
         final SpotApi apiInstance = createSpotApi();
@@ -187,10 +298,35 @@ public class GateApi {
             Ticker ticker = tickers.get(0);
             TickResultDTO resultDTO = new TickResultDTO();
             BeanUtils.copyProperties(ticker, resultDTO);
-            resultDTO.setMarket(ticker.getCurrencyPair());
             return resultDTO;
         } catch (ApiException e) {
-            log.warn("[查询Ticker]异常，code={}，message={}", e.getCode(), e.getMessage());
+            log.warn("[获取单个Ticker信息]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
+            }
+        }
+    }
+
+
+    /**
+     * 获取所有Ticker信息
+     */
+    protected List<TickResultDTO> getTickersCore() throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            final List<Ticker> tickers = apiInstance.listTickers().execute();
+            List<TickResultDTO> result = new ArrayList<>();
+            for (Ticker ticker : tickers) {
+                TickResultDTO resultDTO = new TickResultDTO();
+                BeanUtils.copyProperties(ticker, resultDTO);
+                result.add(resultDTO);
+            }
+            return result;
+        } catch (ApiException e) {
+            log.warn("[获取所有Ticker信息]异常，code={}，message={}", e.getCode(), e.getMessage());
             Throwable sourceCause = e.getCause();
             if (sourceCause instanceof IOException) {
                 throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);

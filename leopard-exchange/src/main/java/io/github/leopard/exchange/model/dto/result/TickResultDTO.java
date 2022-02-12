@@ -20,5 +20,5 @@ public class TickResultDTO implements ToJSON {
     private String low24h;
     private String highestBid;
     private String lowestAsk;
-    private String market;
+    private String currencyPair;
 }
