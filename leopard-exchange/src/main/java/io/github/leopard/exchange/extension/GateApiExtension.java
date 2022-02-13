@@ -5,7 +5,6 @@ import io.github.leopard.exchange.client.GateApi;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.Result;
-import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;

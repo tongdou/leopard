@@ -57,19 +57,21 @@ public class BandTrackingStrategy extends AbstractStrategy {
 
             if (changePercent.compareTo(BigDecimal.ZERO) > 0 && changePercent.compareTo(upPercent) >= 0) {
                 log.info("[{}][{}][{}] 你监控的币爆涨[{}%]", market, intervalEnum.getValue(), prev.getDateTimeString(), changePercent);
-
-                try {
-                    this.doLoopBiz(api, market, maxPullBack, usdtAmt);
-                } catch (StrategyException e) {
-                    log.error("[{}][{}][{}] 策略执行异常[{}]", market, intervalEnum.getValue(), prev.getDateTimeString(),
-                            e.getMsg());
-                }
-
                 return CandlestickMonitorStatus.STOP;
             }
 
             return CandlestickMonitorStatus.RUNNING;
         });
+
+
+        try {
+            this.doLoopBiz(api, market, maxPullBack, usdtAmt);
+        } catch (StrategyException e) {
+            log.error("[{}][{}][{}] 策略执行异常[{}]", market, intervalEnum.getValue(), prev.getDateTimeString(),
+                    e.getMsg());
+        }
+
+
     }
 
 
