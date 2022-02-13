@@ -2,7 +2,7 @@ package io.github.leopard.core.strategy.impl;
 
 import com.alibaba.fastjson.JSON;
 import io.github.leopard.common.utils.CommonUtils;
-import io.github.leopard.core.strategy.StrategyException;
+import io.github.leopard.core.strategy.StrategyExecuteException;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.StrategyResultCodeEnum;
 import io.github.leopard.exchange.client.IExchangeApi;
@@ -38,7 +38,7 @@ public class BandTrackingStrategy extends AbstractStrategy {
 
 
     @Override
-    public void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) {
+    public void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) throws StrategyExecuteException {
 
         GateApiExtension api = (GateApiExtension) exchangeApi;
 
@@ -66,19 +66,19 @@ public class BandTrackingStrategy extends AbstractStrategy {
 
         try {
             this.doLoopBiz(api, market, maxPullBack, usdtAmt);
-        } catch (StrategyException e) {
+        } catch (StrategyExecuteException e) {
             log.error("[{}][{}] 策略执行异常[{}]", market, intervalEnum.getValue(), e.getMsg());
+            throw e;
         }
-
 
     }
 
 
-    private void doLoopBiz(GateApiExtension api, String market, BigDecimal maxPullBack, BigDecimal usdtAmt) throws StrategyException {
+    private void doLoopBiz(GateApiExtension api, String market, BigDecimal maxPullBack, BigDecimal usdtAmt) throws StrategyExecuteException {
 
         SpotAccountResultDTO usdtAccount = api.spotAccountMust("USDT");
         if (usdtAccount.getAvailable().compareTo(usdtAmt) < 0) {
-            throw new StrategyException(StrategyResultCodeEnum.ACCOUNT_NOT_ENOUGH);
+            throw new StrategyExecuteException(StrategyResultCodeEnum.ACCOUNT_NOT_ENOUGH);
         }
 
         //下单
@@ -97,7 +97,7 @@ public class BandTrackingStrategy extends AbstractStrategy {
 
         Result<CreateSpotOrderResultDTO> createSpotOrderResultDTOResult = api.createSpotOrder(spotOrderRequestDTO);
         if (!createSpotOrderResultDTOResult.isSuccess()) {
-            throw new StrategyException(StrategyResultCodeEnum.SPOT_ORDER_FAIL);
+            throw new StrategyExecuteException(StrategyResultCodeEnum.SPOT_ORDER_FAIL);
         }
 
         // 有多少个不好算啊  TODO

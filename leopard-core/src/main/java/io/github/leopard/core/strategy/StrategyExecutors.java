@@ -2,6 +2,7 @@ package io.github.leopard.core.strategy;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.google.common.base.Stopwatch;
 import io.github.leopard.common.utils.StringUtils;
 import io.github.leopard.core.strategy.model.UserSecretDTO;
 import io.github.leopard.exchange.extension.GateApiExtension;
@@ -10,9 +11,8 @@ import io.github.leopard.system.domain.BizStrategy;
 import io.github.leopard.system.domain.BizStrategyUser;
 import io.github.leopard.system.service.IBizStrategyService;
 import io.github.leopard.system.service.IBizStrategyUserService;
-
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -42,16 +42,16 @@ public class StrategyExecutors extends IExecutors {
     }
 
 
-    public IStrategy execute(String strategyId) throws StrategyException {
+    public void execute(String userStrategyId) throws StrategyExecuteException {
 
-        BizStrategyUser strategyUser = this.strategyUserService.selectBizStrategyUserById(strategyId);
+        BizStrategyUser strategyUser = this.strategyUserService.selectBizStrategyUserById(userStrategyId);
         if (strategyUser == null) {
-            throw new StrategyException(StrategyResultCodeEnum.NOT_FOUND);
+            throw new StrategyExecuteException(StrategyResultCodeEnum.NOT_FOUND);
         }
 
         BizStrategy strategy = this.strategyService.selectBizStrategyById(strategyUser.getId());
         if (strategy == null) {
-            throw new StrategyException(StrategyResultCodeEnum.NOT_FOUND);
+            throw new StrategyExecuteException(StrategyResultCodeEnum.NOT_FOUND);
         }
 
         String beanName = strategy.getBeanName();
@@ -63,17 +63,17 @@ public class StrategyExecutors extends IExecutors {
             try {
                 strategyInterface = (IStrategy) springContext.getBean(beanName);
             } catch (NullPointerException npe) {
-                throw new StrategyException(StrategyResultCodeEnum.NOT_FOUND);
+                throw new StrategyExecuteException(StrategyResultCodeEnum.NOT_FOUND);
             }
         }
 
         if (strategyInterface == null) {
-            throw new StrategyException(StrategyResultCodeEnum.NOT_FOUND);
+            throw new StrategyExecuteException(StrategyResultCodeEnum.NOT_FOUND);
         }
 
-        StrategyParam<String, String> params = JSON.parseObject(strategyUser.getConfigJson(), new TypeReference<StrategyParam<String, String>>() {
-        });
-
+        StrategyParam<String, String> params = JSON
+                .parseObject(strategyUser.getConfigJson(), new TypeReference<StrategyParam<String, String>>() {
+                });
 
         UserSecretDTO userSecret = buildUserSecret(strategyUser.getUid());
 
@@ -82,12 +82,16 @@ public class StrategyExecutors extends IExecutors {
         exchangeUserSecretDTO.setSecret(userSecret.getSecret());
         GateApiExtension client = GateApiExtension.auth(exchangeUserSecretDTO);
 
-        strategyInterface.execute(client, params);
+        Stopwatch started = Stopwatch.createStarted();
+        try {
+            strategyInterface.execute(client, params);
+        } catch (StrategyExecuteException e) {
+            log.error("用户策略执行异常[{}][{}]", JSON.toJSON(strategyUser), e.getMsg());
+        }
 
-
-        //TODO
-        return null;
+        log.info("用户策略执行结束，耗时[{}s]", started.elapsed(TimeUnit.SECONDS));
 
     }
+
 
 }

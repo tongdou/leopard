@@ -5,6 +5,7 @@ import io.github.leopard.exchange.client.GateApi;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.Result;
+import io.github.leopard.exchange.model.dto.request.CancelSpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;
@@ -12,6 +13,7 @@ import io.github.leopard.exchange.model.dto.request.PrevCandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
+import io.github.leopard.exchange.model.dto.result.CancelSpotPriceTriggeredOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.CurrencyPairResultDTO;
@@ -100,6 +102,24 @@ public class GateApiExtension extends GateApi {
             return Result.fail(e.getResultCode());
         }
     }
+
+
+    /**
+     * 取消现货触发订单
+     * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
+     */
+    public CancelSpotPriceTriggeredOrderResultDTO cancelSpotPriceTriggeredOrderMust(String orderId) {
+        CancelSpotPriceTriggeredOrderRequestDTO requestDTO = new CancelSpotPriceTriggeredOrderRequestDTO();
+        requestDTO.setOrderId(orderId);
+        while (true) {
+            try {
+                return super.cancelSpotPriceTriggeredOrderCore(requestDTO);
+            } catch (ExchangeApiException e) {
+                CommonUtils.sleepSeconds(1);
+            }
+        }
+    }
+
 
     /**
      * 挂现货单

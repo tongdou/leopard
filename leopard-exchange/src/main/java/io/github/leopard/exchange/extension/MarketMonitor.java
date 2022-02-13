@@ -16,7 +16,7 @@ public class MarketMonitor {
 
 
     /**
-     * 以一定的周期开始监控一个市场 这个方法不会抛出异常
+     * 以一定的周期开始监控一个市场
      */
     public static void syncMonitor(String market, CandlesticksIntervalEnum interval, CandlestickChangeListener changeListener) {
 

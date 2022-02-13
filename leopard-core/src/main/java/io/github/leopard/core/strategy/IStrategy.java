@@ -9,5 +9,5 @@ import io.github.leopard.exchange.client.IExchangeApi;
  */
 public interface IStrategy {
 
-    void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) throws StrategyException;
+    void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) throws StrategyExecuteException;
 }

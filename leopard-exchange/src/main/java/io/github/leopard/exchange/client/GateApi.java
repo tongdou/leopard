@@ -20,12 +20,14 @@ import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
+import io.github.leopard.exchange.model.dto.request.CancelSpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
+import io.github.leopard.exchange.model.dto.result.CancelSpotPriceTriggeredOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.CurrencyPairResultDTO;
@@ -152,6 +154,27 @@ public class GateApi implements IExchangeApi{
             return result;
         } catch (ApiException e) {
             log.warn("[查询现货账户]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
+            }
+        }
+    }
+
+
+    /**
+     * 取消现货触发订单
+     */
+    protected CancelSpotPriceTriggeredOrderResultDTO cancelSpotPriceTriggeredOrderCore(CancelSpotPriceTriggeredOrderRequestDTO requestDTO)
+            throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            apiInstance.cancelSpotPriceTriggeredOrder(requestDTO.getOrderId());
+            return new CancelSpotPriceTriggeredOrderResultDTO();
+        } catch (ApiException e) {
+            log.warn("[取消现货触发订单]异常，code={}，message={}", e.getCode(), e.getMessage());
             Throwable sourceCause = e.getCause();
             if (sourceCause instanceof IOException) {
                 throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);

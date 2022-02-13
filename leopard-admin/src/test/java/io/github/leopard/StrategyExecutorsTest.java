@@ -1,6 +1,6 @@
 package io.github.leopard;
 
-import io.github.leopard.core.strategy.StrategyException;
+import io.github.leopard.core.strategy.StrategyExecuteException;
 import io.github.leopard.core.strategy.StrategyExecutors;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ public class StrategyExecutorsTest extends AbstractBaseTest {
     private StrategyExecutors strategyExecutors;
 
     @Test
-    public void executeTest() throws StrategyException {
+    public void executeTest() throws StrategyExecuteException {
         strategyExecutors.execute("1");
     }
 }
