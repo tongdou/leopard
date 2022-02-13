@@ -1,31 +1,24 @@
 package io.github.leopard.core.strategy.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Maps;
-import io.gate.gateapi.models.SpotAccount;
 import io.github.leopard.common.utils.CommonUtils;
-import io.github.leopard.core.strategy.IStrategy;
 import io.github.leopard.core.strategy.StrategyException;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.StrategyResultCodeEnum;
 import io.github.leopard.exchange.client.IExchangeApi;
 import io.github.leopard.exchange.extension.GateApiExtension;
 import io.github.leopard.exchange.extension.MarketMonitor;
-import io.github.leopard.exchange.extension.MarketMonitor.TickerChangeListener;
+import io.github.leopard.exchange.extension.MarketMonitor.CandlestickMonitorStatus;
 import io.github.leopard.exchange.model.dto.Result;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
-import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.SideEnum;
 import io.github.leopard.exchange.model.enums.TimeInForceEnum;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -71,11 +64,12 @@ public class BandTrackingStrategy extends AbstractStrategy {
                     log.error("[{}][{}][{}] 策略执行异常[{}]", market, intervalEnum.getValue(), prev.getDateTimeString(),
                             e.getMsg());
                 }
-                throw new InterruptedException();
+
+                return CandlestickMonitorStatus.STOP;
             }
 
+            return CandlestickMonitorStatus.RUNNING;
         });
-
     }
 
 
@@ -120,7 +114,6 @@ public class BandTrackingStrategy extends AbstractStrategy {
             }
             CommonUtils.sleepSeconds(3);
         }
-
 
         new BandTrackingStrategySupport(api).syncExecute(
                 market,

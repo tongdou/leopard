@@ -2,15 +2,17 @@ package io.github.leopard.exchange.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * 用户密钥信息
+ * 交易所用户密钥信息
  *
  * @author <a href="mailto:fuwei13@xdf.cn">pleuvoir</a>
  */
 @Data
 @AllArgsConstructor
-public class UserSecretDTO {
+@NoArgsConstructor
+public class ExchangeUserSecretDTO {
 
     /**
      * gate api key
@@ -21,9 +23,5 @@ public class UserSecretDTO {
      */
     private String secret;
 
-    /**
-     * 微信uid
-     */
-    private String wxUid;
 
 }

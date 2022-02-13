@@ -36,12 +36,12 @@ public class BandTrackingStrategySupport {
     public void syncExecute(String market, BigDecimal buyerPrice, BigDecimal tokenAmt, BigDecimal percent,
             CandlesticksIntervalEnum intervalEnum) {
 
-        CandlestickResultDTO prevTicker = api.candlestickRecentMust(market, intervalEnum);
-        String prevDateTimeString = prevTicker.getDateTimeString();
+        CandlestickResultDTO prevCandlestick = api.candlestickRecentMust(market, intervalEnum);
+        String prevDateTimeString = prevCandlestick.getDateTimeString();
         log.info("[{}][{}]开始波段追踪，第一次追踪所在时间周期为[{}]", market, intervalEnum.getValue(), prevDateTimeString);
 
         //动态最高价
-        BigDecimal prevHighest = prevTicker.getHighest();
+        BigDecimal prevHighest = prevCandlestick.getHighest();
 
         //动态触发卖出价格
         BigDecimal triggerSellPrice = this.createFirstTriggerOrder(market, prevDateTimeString, tokenAmt, buyerPrice,
@@ -50,13 +50,13 @@ public class BandTrackingStrategySupport {
         log.info("[{}][{}][{}]完成初始触发价格设置，开始循环波段追踪。", market, intervalEnum.getValue(), prevDateTimeString);
 
         while (true) {
-            CandlestickResultDTO curTicker = api.candlestickRecentMust(market, intervalEnum);
+            CandlestickResultDTO curCandlestick = api.candlestickRecentMust(market, intervalEnum);
 
             TickResultDTO tickResultDTO = api.getTickerMust(market);
             BigDecimal lastPrice = tickResultDTO.getLast(); //最新价
             BigDecimal curHighest = tickResultDTO.getHigh24h(); //当前最高价
 
-            String curDateTimeString = curTicker.getDateTimeString();
+            String curDateTimeString = curCandlestick.getDateTimeString();
 
             if (StringUtils.equals(prevDateTimeString, curDateTimeString)) {
 
@@ -82,11 +82,11 @@ public class BandTrackingStrategySupport {
                 prevCandlestickRequestDTO.setMarket(market);
                 prevCandlestickRequestDTO.setIntervalEnum(intervalEnum);
                 prevCandlestickRequestDTO.setCurDateTime(LocalDateTime.now());
-                prevTicker = api.prevCandlestickMust(prevCandlestickRequestDTO);
+                prevCandlestick = api.prevCandlestickMust(prevCandlestickRequestDTO);
 
                 //切换可能会出现一个新的最高价 不要错过
-                if (prevTicker.getHighest().compareTo(prevHighest) > 0) {
-                    prevHighest = prevTicker.getHighest();
+                if (prevCandlestick.getHighest().compareTo(prevHighest) > 0) {
+                    prevHighest = prevCandlestick.getHighest();
                 }
 
                 prevDateTimeString = curDateTimeString;

@@ -2,6 +2,7 @@ package io.github.leopard.system.test.client;
 
 import com.alibaba.fastjson.JSON;
 import io.github.leopard.exchange.extension.GateApiExtension;
+import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.Result;
 import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
@@ -24,7 +25,7 @@ public class GateApiExtensionTest {
 
     @Test
     public void createSpotPriceTriggeredOrder_test() {
-        UserSecretDTO userSecret = new UserSecretDTO("", "");
+        ExchangeUserSecretDTO userSecret = new ExchangeUserSecretDTO("", "");
         GateApiExtension client = GateApiExtension.auth(userSecret);
         SpotPriceTriggeredOrderRequestDTO requestDTO = new SpotPriceTriggeredOrderRequestDTO();
         Result<SpotPriceTriggeredOrderResultDTO> result = client.createSpotPriceTriggeredOrder(requestDTO);
@@ -67,7 +68,7 @@ public class GateApiExtensionTest {
 
     @Test
     public void spotAccountMust_test() {
-        UserSecretDTO userSecret = new UserSecretDTO("", "");
+        ExchangeUserSecretDTO userSecret = new ExchangeUserSecretDTO("", "");
         GateApiExtension client = GateApiExtension.auth(userSecret);
         SpotAccountResultDTO resultDTO = client.spotAccountMust("ETH");
         System.out.println(JSON.toJSONString(resultDTO, true));

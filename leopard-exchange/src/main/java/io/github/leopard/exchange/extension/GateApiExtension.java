@@ -3,6 +3,7 @@ package io.github.leopard.exchange.extension;
 import io.github.leopard.common.utils.CommonUtils;
 import io.github.leopard.exchange.client.GateApi;
 import io.github.leopard.exchange.exception.ExchangeApiException;
+import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.Result;
 import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
@@ -30,16 +31,16 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class GateApiExtension extends GateApi {
 
-    private GateApiExtension(UserSecretDTO userSecretDTO) {
+    private GateApiExtension(ExchangeUserSecretDTO userSecretDTO) {
         super(userSecretDTO);
     }
 
-    public static GateApiExtension auth(UserSecretDTO userSecretDTO) {
+    public static GateApiExtension auth(ExchangeUserSecretDTO userSecretDTO) {
         return new GateApiExtension(userSecretDTO);
     }
 
     public static GateApiExtension create() {
-        return new GateApiExtension(new UserSecretDTO(StringUtils.EMPTY, StringUtils.EMPTY,StringUtils.EMPTY));
+        return new GateApiExtension(new ExchangeUserSecretDTO(StringUtils.EMPTY, StringUtils.EMPTY));
     }
 
 

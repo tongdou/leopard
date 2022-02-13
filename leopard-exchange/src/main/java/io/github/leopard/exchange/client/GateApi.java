@@ -19,6 +19,7 @@ import io.github.leopard.common.utils.DateFormatEnum;
 import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
+import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
@@ -52,9 +53,9 @@ public class GateApi implements IExchangeApi{
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private UserSecretDTO userSecretDTO;
+    private ExchangeUserSecretDTO userSecretDTO;
 
-    protected GateApi(UserSecretDTO userSecretDTO) {
+    protected GateApi(ExchangeUserSecretDTO userSecretDTO) {
         this.userSecretDTO = userSecretDTO;
     }
 

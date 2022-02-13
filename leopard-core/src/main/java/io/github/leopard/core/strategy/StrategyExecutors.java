@@ -3,8 +3,9 @@ package io.github.leopard.core.strategy;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import io.github.leopard.common.utils.StringUtils;
+import io.github.leopard.core.strategy.model.UserSecretDTO;
 import io.github.leopard.exchange.extension.GateApiExtension;
-import io.github.leopard.exchange.model.dto.UserSecretDTO;
+import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.system.domain.BizStrategy;
 import io.github.leopard.system.domain.BizStrategyUser;
 import io.github.leopard.system.service.IBizStrategyService;
@@ -73,9 +74,13 @@ public class StrategyExecutors extends IExecutors {
         StrategyParam<String, String> params = JSON.parseObject(strategyUser.getConfigJson(), new TypeReference<StrategyParam<String, String>>() {
         });
 
-        UserSecretDTO userSecret = buildUserSecret(strategyUser.getUid());
-        GateApiExtension client = GateApiExtension.auth(userSecret);
 
+        UserSecretDTO userSecret = buildUserSecret(strategyUser.getUid());
+
+        ExchangeUserSecretDTO exchangeUserSecretDTO = new ExchangeUserSecretDTO();
+        exchangeUserSecretDTO.setKey(userSecret.getKey());
+        exchangeUserSecretDTO.setSecret(userSecret.getSecret());
+        GateApiExtension client = GateApiExtension.auth(exchangeUserSecretDTO);
 
         strategyInterface.execute(client, params);
 

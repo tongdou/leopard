@@ -1,7 +1,6 @@
 package io.github.leopard.exchange.extension;
 
 import io.github.leopard.common.utils.CommonUtils;
-import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.PrevCandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
@@ -19,7 +18,7 @@ public class MarketMonitor {
     /**
      * 以一定的周期开始监控一个市场 这个方法不会抛出异常
      */
-    public static void syncMonitor(String market, CandlesticksIntervalEnum interval, TickerChangeListener changeListener) {
+    public static void syncMonitor(String market, CandlesticksIntervalEnum interval, CandlestickChangeListener changeListener) {
 
         GateApiExtension api = GateApiExtension.create();
 
@@ -45,10 +44,8 @@ public class MarketMonitor {
                 prevTicker = api.prevCandlestickMust(prevCandlestickRequestDTO);
 
                 prevDateTimeString = curDateTimeString;
-                try {
-                    changeListener.onchange(prevTicker, curTicker, interval);
-                } catch (InterruptedException e) {
-                    //其它异常不要影响监控的运行
+                CandlestickMonitorStatus monitorStatus = changeListener.onchange(prevTicker, curTicker, interval);
+                if (monitorStatus.equals(CandlestickMonitorStatus.STOP)) {
                     break;
                 }
             }
@@ -57,10 +54,13 @@ public class MarketMonitor {
     }
 
 
-    public interface TickerChangeListener {
+    public interface CandlestickChangeListener {
 
-        void onchange(CandlestickResultDTO prev, CandlestickResultDTO cur, CandlesticksIntervalEnum interval)
-                throws InterruptedException;
+        CandlestickMonitorStatus onchange(CandlestickResultDTO prev, CandlestickResultDTO cur, CandlesticksIntervalEnum interval);
     }
 
+    public enum CandlestickMonitorStatus {
+        RUNNING, //继续运行
+        STOP;  //终止监控
+    }
 }

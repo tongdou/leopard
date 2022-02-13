@@ -1,11 +1,9 @@
 package io.github.leopard.core.strategy;
 
 import io.github.leopard.common.utils.security.EncryptorUtil;
-import io.github.leopard.exchange.model.dto.UserSecretDTO;
+import io.github.leopard.core.strategy.model.UserSecretDTO;
 import io.github.leopard.system.domain.BizMerchantConfig;
 import io.github.leopard.system.service.IBizMerchantConfigService;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
