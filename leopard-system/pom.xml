@@ -22,6 +22,10 @@
             <groupId>io.github.road</groupId>
             <artifactId>leopard-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.road</groupId>
+            <artifactId>leopard-quartz</artifactId>
+        </dependency>
 
     </dependencies>
 
