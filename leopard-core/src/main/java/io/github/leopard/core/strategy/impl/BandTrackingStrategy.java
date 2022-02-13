@@ -53,8 +53,9 @@ public class BandTrackingStrategy extends AbstractStrategy {
             log.info("[{}][{}][{}]周期内的涨幅为[{}%]，开盘[{}]，收盘[{}]", market, intervalEnum.getValue(), prev.getDateTimeString(),
                     changePercent,
                     prev.getOpenString(), prev.getCloseString());
-
-            if (changePercent.compareTo(BigDecimal.ZERO) > 0 && changePercent.compareTo(upPercent) >= 0) {
+            BigDecimal todayChangePercentage = api.fetchCurrencyTodayChangePercentage(market);
+            if (changePercent.compareTo(BigDecimal.ZERO) > 0 && changePercent.compareTo(upPercent) >= 0 &&
+                    todayChangePercentage.compareTo(BigDecimal.ZERO)>0) {
                 log.info("[{}][{}][{}] 你监控的币爆涨[{}%]", market, intervalEnum.getValue(), prev.getDateTimeString(), changePercent);
                 return CandlestickMonitorStatus.STOP;
             }
