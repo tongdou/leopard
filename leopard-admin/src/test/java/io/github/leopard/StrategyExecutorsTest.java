@@ -1,6 +1,6 @@
 package io.github.leopard;
 
-import io.github.leopard.core.strategy.StrategyExecuteException;
+import io.github.leopard.core.strategy.exception.StrategyExecuteException;
 import io.github.leopard.core.strategy.StrategyExecutors;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

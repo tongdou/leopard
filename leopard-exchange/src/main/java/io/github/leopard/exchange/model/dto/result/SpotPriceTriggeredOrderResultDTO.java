@@ -10,5 +10,5 @@ import lombok.Data;
 @Data
 public class SpotPriceTriggeredOrderResultDTO {
 
-    private String id;
+    private String orderId;
 }

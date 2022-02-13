@@ -1,5 +1,6 @@
 package io.github.leopard.core.strategy;
 
+import io.github.leopard.core.strategy.exception.StrategyExecuteException;
 import io.github.leopard.exchange.client.IExchangeApi;
 
 /**

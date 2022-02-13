@@ -12,6 +12,7 @@ import io.github.leopard.exchange.model.dto.result.SpotPriceTriggeredOrderResult
 import io.github.leopard.exchange.model.dto.result.TickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.RuleEnum;
+import io.github.leopard.exchange.model.enums.SideEnum;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ public class BandTrackingStrategySupport {
         this.api = api;
     }
 
+    private String prevTriggerOrderId; //上次触发单订单号
 
     public void syncExecute(String market, BigDecimal buyerPrice, BigDecimal tokenAmt, BigDecimal percent,
             CandlesticksIntervalEnum intervalEnum) {
@@ -125,10 +127,10 @@ public class BandTrackingStrategySupport {
         String message;
         if (profit) {
             message = String.format("[%s][%s][%s]盈利态破新高[%s][%s]，已创建触发单[%s][%s]", market, intervalEnum.getValue(),
-                    prevDateTimeString, curHighestPercent, triggerSellPricePercent, orderResponse.getId(), triggerSellPrice);
+                    prevDateTimeString, curHighestPercent, triggerSellPricePercent, orderResponse.getOrderId(), triggerSellPrice);
         } else {
             message = String.format("[%s][%s][%s]亏损态破新高[%s][%s]，已创建触发单[%s][%s]", market, intervalEnum.getValue(),
-                    prevDateTimeString, curHighestPercent, triggerSellPricePercent, orderResponse.getId(), triggerSellPrice);
+                    prevDateTimeString, curHighestPercent, triggerSellPricePercent, orderResponse.getOrderId(), triggerSellPrice);
         }
 
         log.info(message);
@@ -163,7 +165,7 @@ public class BandTrackingStrategySupport {
 
         SpotPriceTriggeredOrderResultDTO orderResponse = this.createTriggerOrder(market, triggerSellPrice, triggerSellPrice, tokenAmt);
         String message = String.format("[%s][%s][%s]刚买入，已创建触发单[%s][%s]", market, intervalEnum.getValue(),
-                prevDateTimeString, orderResponse.getId(), triggerSellPrice);
+                prevDateTimeString, orderResponse.getOrderId(), triggerSellPrice);
         log.info(message);
 
         return triggerSellPrice;
@@ -173,8 +175,7 @@ public class BandTrackingStrategySupport {
     private SpotPriceTriggeredOrderResultDTO createTriggerOrder(String market, BigDecimal triggerSellPrice, BigDecimal sellPrice,
             BigDecimal tokenAmt) throws ServiceException {
 
-        //先取消所有的自动订单  TODO
-
+        log.info("[{}]准备创建新的自动订单，triggerSellPrice={}，sellPrice={}", market, triggerSellPrice, sellPrice);
         SpotPriceTriggeredOrderRequestDTO triggeredOrderRequestDTO = new SpotPriceTriggeredOrderRequestDTO();
         triggeredOrderRequestDTO.setMarket(market);
         triggeredOrderRequestDTO.setPrice(sellPrice);
@@ -182,17 +183,16 @@ public class BandTrackingStrategySupport {
         triggeredOrderRequestDTO.setTokenAmt(tokenAmt);
         triggeredOrderRequestDTO.setTriggerExpiration(3600 * 24 * 7);
         triggeredOrderRequestDTO.setTriggerRule(RuleEnum.LESS_THAN_OR_EQUAL_TO);
-        triggeredOrderRequestDTO.setSideEnum(io.github.leopard.exchange.model.enums.SideEnum.SELL);
-        Result<SpotPriceTriggeredOrderResultDTO> result = api.createSpotPriceTriggeredOrder(triggeredOrderRequestDTO);
+        triggeredOrderRequestDTO.setSideEnum(SideEnum.SELL);
+        SpotPriceTriggeredOrderResultDTO orderResultDTO = api.createSpotPriceTriggeredOrderMust(triggeredOrderRequestDTO);
+        log.info("[{}]自动订单创建成功，orderId={}", market, orderResultDTO.getOrderId());
 
-        if (!result.isSuccess()) {
+        //取消之前的自动订单
+        api.cancelSpotPriceTriggeredOrderMust(prevTriggerOrderId);
+        log.info("[{}]自动订单已取消，prevTriggerOrderId={}", market, prevTriggerOrderId);
 
-        }
+        this.prevTriggerOrderId = orderResultDTO.getOrderId(); //下次取消使用
 
-        SpotPriceTriggeredOrderResultDTO orderResultDTO = result.getData();
-
-        //    log.info("[{}]准备创建新的自动订单，triggerSellPrice={}，sellPrice={}", market, triggerSellPrice, sellPrice);
-        //    log.info("[{}]自动订单创建成功，id={}", market, triggeredOrder.getId());
         return orderResultDTO;
     }
 
