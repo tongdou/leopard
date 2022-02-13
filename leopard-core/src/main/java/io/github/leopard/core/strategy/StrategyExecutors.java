@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  *
  * @author <a href="mailto:fuwei13@xdf.cn">pleuvoir</a>
  */
-@Component
+@Component("strategyExecutors")
 @Slf4j
 public class StrategyExecutors extends IExecutors {
 

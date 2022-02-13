@@ -1,7 +1,10 @@
 package io.github.leopard.system.service;
 
 import java.util.List;
+
+import io.github.leopard.common.exception.job.TaskException;
 import io.github.leopard.system.domain.BizStrategyUser;
+import org.quartz.SchedulerException;
 
 /**
  * 用户策略Service接口
@@ -33,7 +36,7 @@ public interface IBizStrategyUserService
      * @param bizStrategyUser 用户策略
      * @return 结果
      */
-    public int insertBizStrategyUser(BizStrategyUser bizStrategyUser);
+    public int insertBizStrategyUser(BizStrategyUser bizStrategyUser) throws SchedulerException, TaskException;
 
     /**
      * 修改用户策略

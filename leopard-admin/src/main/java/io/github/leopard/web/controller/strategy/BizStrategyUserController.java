@@ -5,9 +5,12 @@ import io.github.leopard.common.core.controller.BaseController;
 import io.github.leopard.common.core.domain.AjaxResult;
 import io.github.leopard.common.core.page.TableDataInfo;
 import io.github.leopard.common.enums.BusinessType;
+import io.github.leopard.common.exception.job.TaskException;
 import io.github.leopard.system.domain.BizStrategyUser;
 import io.github.leopard.system.service.IBizStrategyUserService;
 import java.util.List;
+
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -66,8 +69,7 @@ public class BizStrategyUserController extends BaseController
     @Log(title = "用户策略", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult addSave(BizStrategyUser bizStrategyUser)
-    {
+    public AjaxResult addSave(BizStrategyUser bizStrategyUser) throws SchedulerException, TaskException {
         return toAjax(bizStrategyUserService.insertBizStrategyUser(bizStrategyUser));
     }
 

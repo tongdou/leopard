@@ -13,10 +13,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="status"    column="status"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateTime"    column="update_time"    />
+        <result property="cronExpression" column="cron_expression" />
+
     </resultMap>
 
     <sql id="selectBizStrategyUserVo">
-        select id, uid, strategy_id, strategy_name, config_json, status, create_time, update_time from biz_strategy_user
+        select id, uid, strategy_id, strategy_name, config_json,cron_expression, status, create_time, update_time from biz_strategy_user
     </sql>
 
     <select id="selectBizStrategyUserList" parameterType="BizStrategyUser" resultMap="BizStrategyUserResult">
@@ -43,7 +45,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="status != null and status != ''">status,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateTime != null">update_time,</if>
-         </trim>
+            <if test="cronExpression != null and cronExpression != ''">cron_expression,</if>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="uid != null">#{uid},</if>
             <if test="strategyId != null">#{strategyId},</if>
@@ -52,7 +55,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="status != null and status != ''">#{status},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
-         </trim>
+            <if test="cronExpression != null and cronExpression != ''">#{cronExpression},</if>
+        </trim>
     </insert>
 
     <update id="updateBizStrategyUser" parameterType="BizStrategyUser">
@@ -65,6 +69,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="status != null and status != ''">status = #{status},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="cronExpression != null and cronExpression != ''">cron_expression = #{cronExpression},</if>
+
         </trim>
         where id = #{id}
     </update>

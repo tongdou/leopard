@@ -37,6 +37,11 @@ public class BizStrategyUser extends BaseEntity
     @Excel(name = "策略运行状态")
     private String status;
 
+    /**
+     * corn表达式
+     */
+    private String cronExpression;
+
     public void setId(String id) 
     {
         this.id = id;
@@ -104,5 +109,13 @@ public class BizStrategyUser extends BaseEntity
             .append("createTime", getCreateTime())
             .append("updateTime", getUpdateTime())
             .toString();
+    }
+
+    public String getCronExpression() {
+        return cronExpression;
+    }
+
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
     }
 }
