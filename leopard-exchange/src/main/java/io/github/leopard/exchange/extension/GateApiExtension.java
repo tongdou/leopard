@@ -9,6 +9,8 @@ import io.github.leopard.exchange.model.dto.request.CancelSpotPriceTriggeredOrde
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;
+import io.github.leopard.exchange.model.dto.request.EatSpotOrderMarketRequestDTO;
+import io.github.leopard.exchange.model.dto.request.ListOrderBookRequestDTO;
 import io.github.leopard.exchange.model.dto.request.PrevCandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
@@ -17,10 +19,17 @@ import io.github.leopard.exchange.model.dto.result.CancelSpotPriceTriggeredOrder
 import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.CurrencyPairResultDTO;
+import io.github.leopard.exchange.model.dto.result.EatSpotOrderMarketResultDTO;
+import io.github.leopard.exchange.model.dto.result.ListOrderBookResultDTO;
+import io.github.leopard.exchange.model.dto.result.ListOrderBookResultDTO.AskDTO;
 import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotPriceTriggeredOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.TickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
+import io.github.leopard.exchange.model.enums.OrderStatusEnum;
+import io.github.leopard.exchange.model.enums.SideEnum;
+import io.github.leopard.exchange.model.enums.TimeInForceEnum;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -92,6 +101,9 @@ public class GateApiExtension extends GateApi {
     }
 
 
+
+
+
     /**
      * 创建现货触发订单
      */
@@ -100,6 +112,21 @@ public class GateApiExtension extends GateApi {
             return Result.success(super.createSpotPriceTriggeredOrderCore(request));
         } catch (ExchangeApiException e) {
             return Result.fail(e.getResultCode());
+        }
+    }
+
+
+    /**
+     * 创建现货触发订单
+     * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
+     */
+    public SpotPriceTriggeredOrderResultDTO createSpotPriceTriggeredOrderMust(SpotPriceTriggeredOrderRequestDTO request) {
+        while (true) {
+            try {
+                return super.createSpotPriceTriggeredOrderCore(request);
+            } catch (ExchangeApiException e) {
+                CommonUtils.sleepSeconds(1);
+            }
         }
     }
 
@@ -122,13 +149,81 @@ public class GateApiExtension extends GateApi {
 
 
     /**
-     * 挂现货单
+     * 市价吃单（全部成交）
+     *
+     * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
+     */
+    public EatSpotOrderMarketResultDTO eatSpotOrderMarketMust(EatSpotOrderMarketRequestDTO request) {
+
+        while (true){
+            //获取最新成交价
+            BigDecimal lastPrice = this.getTickerMust(request.getMarket()).getLast();
+
+            CreateSpotOrderRequestDTO orderRequestDTO = new CreateSpotOrderRequestDTO();
+            orderRequestDTO.setPrice(lastPrice.add(new BigDecimal("0.00001")));   //加一点钱，排到前面去
+            orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 8, BigDecimal.ROUND_HALF_UP));
+            orderRequestDTO.setSideEnum(SideEnum.BUY);
+            orderRequestDTO.setTimeInForceEnum(TimeInForceEnum.IOC);
+
+            Result<CreateSpotOrderResultDTO> spotOrderResponse = this.createSpotOrder(orderRequestDTO);
+            if(spotOrderResponse.isSuccess() &&
+                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)){
+                EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
+                resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
+                resultDTO.setPrice(orderRequestDTO.getPrice());
+                resultDTO.setMarket(request.getMarket());
+                return resultDTO;
+            }else{
+                //TODO 超时查证 否则会循环下单 !!!
+                log.error("最新成交价市价吃单异常，message={}",spotOrderResponse.getMsg());
+            }
+
+            //获取卖一价
+            ListOrderBookRequestDTO requestDTO = new ListOrderBookRequestDTO();
+            ListOrderBookResultDTO bookResultDTO = listOrderBookMust(requestDTO);
+            AskDTO askDTO = bookResultDTO.getAsks().get(0);
+
+            orderRequestDTO.setPrice(askDTO.getPrice().add(new BigDecimal("0.00001")));
+            orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 8, BigDecimal.ROUND_HALF_UP));
+
+            spotOrderResponse = this.createSpotOrder(orderRequestDTO);
+            if(spotOrderResponse.isSuccess() &&
+                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)){
+                EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
+                resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
+                resultDTO.setPrice(orderRequestDTO.getPrice());
+                resultDTO.setMarket(request.getMarket());
+                return resultDTO;
+            }else{
+                //TODO 超时查证 否则会循环下单 !!!
+                log.error("卖一价市价吃单异常，message={}",spotOrderResponse.getMsg());
+            }
+        }
+    }
+
+
+    /**
+     * 现货下单
      */
     public Result<CreateSpotOrderResultDTO> createSpotOrder(CreateSpotOrderRequestDTO request) {
         try {
             return Result.success(super.createSpotOrderCore(request));
         } catch (ExchangeApiException e) {
             return Result.fail(e.getResultCode());
+        }
+    }
+
+    /**
+     * 查询市场深度信息
+     * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
+     */
+    public ListOrderBookResultDTO listOrderBookMust(ListOrderBookRequestDTO requestDTO) {
+        while (true) {
+            try {
+                return super.listOrderBookCore(requestDTO);
+            } catch (ExchangeApiException e) {
+                CommonUtils.sleepSeconds(1);
+            }
         }
     }
 

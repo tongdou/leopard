@@ -2,20 +2,18 @@ package io.github.leopard.core.strategy.impl;
 
 import com.alibaba.fastjson.JSON;
 import io.github.leopard.common.utils.CommonUtils;
-import io.github.leopard.core.strategy.StrategyExecuteException;
 import io.github.leopard.core.strategy.StrategyParam;
-import io.github.leopard.core.strategy.StrategyResultCodeEnum;
+import io.github.leopard.core.strategy.exception.StrategyExecuteException;
+import io.github.leopard.core.strategy.exception.StrategyResultCodeEnum;
 import io.github.leopard.exchange.client.IExchangeApi;
 import io.github.leopard.exchange.extension.GateApiExtension;
 import io.github.leopard.exchange.extension.MarketMonitor;
 import io.github.leopard.exchange.extension.MarketMonitor.CandlestickMonitorStatus;
-import io.github.leopard.exchange.model.dto.Result;
-import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
-import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
+import io.github.leopard.exchange.model.dto.request.EatSpotOrderMarketRequestDTO;
+import io.github.leopard.exchange.model.dto.result.EatSpotOrderMarketResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.SideEnum;
-import io.github.leopard.exchange.model.enums.TimeInForceEnum;
 import java.math.BigDecimal;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +61,6 @@ public class BandTrackingStrategy extends AbstractStrategy {
             return CandlestickMonitorStatus.RUNNING;
         });
 
-
         try {
             this.doLoopBiz(api, market, maxPullBack, usdtAmt);
         } catch (StrategyExecuteException e) {
@@ -74,31 +71,20 @@ public class BandTrackingStrategy extends AbstractStrategy {
     }
 
 
-    private void doLoopBiz(GateApiExtension api, String market, BigDecimal maxPullBack, BigDecimal usdtAmt) throws StrategyExecuteException {
+    private void doLoopBiz(GateApiExtension api, String market, BigDecimal maxPullBack, BigDecimal usdtAmt)
+            throws StrategyExecuteException {
 
         SpotAccountResultDTO usdtAccount = api.spotAccountMust("USDT");
         if (usdtAccount.getAvailable().compareTo(usdtAmt) < 0) {
             throw new StrategyExecuteException(StrategyResultCodeEnum.ACCOUNT_NOT_ENOUGH);
         }
 
-        //下单
-
-        //获取最新价
-        BigDecimal lastPrice = api.getTickerMust(market).getLast();
-
-        CreateSpotOrderRequestDTO spotOrderRequestDTO = new CreateSpotOrderRequestDTO();
-        spotOrderRequestDTO.setMarket(market);
-        spotOrderRequestDTO.setSideEnum(SideEnum.BUY);
-        spotOrderRequestDTO.setTimeInForceEnum(TimeInForceEnum.IOC);
-        spotOrderRequestDTO.setPrice(lastPrice.add(new BigDecimal("0.00001")));
-
-        // 计算大概能买多少个 四舍五入
-        spotOrderRequestDTO.setTokenAmt(usdtAmt.divide(spotOrderRequestDTO.getPrice(), 8, BigDecimal.ROUND_HALF_UP));
-
-        Result<CreateSpotOrderResultDTO> createSpotOrderResultDTOResult = api.createSpotOrder(spotOrderRequestDTO);
-        if (!createSpotOrderResultDTOResult.isSuccess()) {
-            throw new StrategyExecuteException(StrategyResultCodeEnum.SPOT_ORDER_FAIL);
-        }
+        //吃单 TODO 优化下单金额 效率 滑点
+        EatSpotOrderMarketRequestDTO marketRequestDTO = new EatSpotOrderMarketRequestDTO();
+        marketRequestDTO.setMarket(market);
+        marketRequestDTO.setSideEnum(SideEnum.BUY);
+        marketRequestDTO.setUsdtAmt(usdtAmt);
+        EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMust(marketRequestDTO);
 
         // 有多少个不好算啊  TODO
         BigDecimal remain;
@@ -115,11 +101,11 @@ public class BandTrackingStrategy extends AbstractStrategy {
             }
             CommonUtils.sleepSeconds(3);
         }
-
+        
         new BandTrackingStrategySupport(api).syncExecute(
                 market,
-                spotOrderRequestDTO.getPrice(),
-                spotOrderRequestDTO.getTokenAmt(),
+                orderMarketResultDTO.getPrice(),
+                orderMarketResultDTO.getTokenAmt(),
                 maxPullBack,
                 CandlesticksIntervalEnum.M_5);
     }

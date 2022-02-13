@@ -4,10 +4,12 @@ import com.google.common.collect.Lists;
 import io.gate.gateapi.ApiClient;
 import io.gate.gateapi.ApiException;
 import io.gate.gateapi.Configuration;
+import io.gate.gateapi.GateApiException;
 import io.gate.gateapi.api.SpotApi;
 import io.gate.gateapi.api.SpotApi.APIlistCandlesticksRequest;
 import io.gate.gateapi.models.CurrencyPair;
 import io.gate.gateapi.models.Order;
+import io.gate.gateapi.models.OrderBook;
 import io.gate.gateapi.models.SpotAccount;
 import io.gate.gateapi.models.SpotPricePutOrder;
 import io.gate.gateapi.models.SpotPricePutOrder.AccountEnum;
@@ -15,6 +17,8 @@ import io.gate.gateapi.models.SpotPriceTrigger;
 import io.gate.gateapi.models.SpotPriceTrigger.RuleEnum;
 import io.gate.gateapi.models.SpotPriceTriggeredOrder;
 import io.gate.gateapi.models.Ticker;
+import io.gate.gateapi.models.TriggerOrderResponse;
+import io.github.leopard.common.exception.ServiceException;
 import io.github.leopard.common.utils.DateFormatEnum;
 import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.exchange.exception.ExchangeApiException;
@@ -24,6 +28,7 @@ import io.github.leopard.exchange.model.dto.request.CancelSpotPriceTriggeredOrde
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;
+import io.github.leopard.exchange.model.dto.request.ListOrderBookRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
@@ -31,6 +36,9 @@ import io.github.leopard.exchange.model.dto.result.CancelSpotPriceTriggeredOrder
 import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.CreateSpotOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.CurrencyPairResultDTO;
+import io.github.leopard.exchange.model.dto.result.ListOrderBookResultDTO;
+import io.github.leopard.exchange.model.dto.result.ListOrderBookResultDTO.AskDTO;
+import io.github.leopard.exchange.model.dto.result.ListOrderBookResultDTO.BidDTO;
 import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotPriceTriggeredOrderResultDTO;
 import io.github.leopard.exchange.model.dto.result.TickResultDTO;
@@ -99,6 +107,52 @@ public class GateApi implements IExchangeApi{
             return result;
         } catch (ApiException e) {
             log.warn("[查询所有币种信息]异常，code={}，message={}", e.getCode(), e.getMessage());
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
+            }
+        }
+    }
+
+
+    /**
+     * 查询市场深度信息
+     */
+    public ListOrderBookResultDTO listOrderBookCore(ListOrderBookRequestDTO requestDTO) throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            OrderBook orderBook = apiInstance.listOrderBook(requestDTO.getMarket())
+                    .interval(requestDTO.getInterval())
+                    .limit(requestDTO.getLimit())
+                    .withId(requestDTO.isWithId())
+                    .execute();
+            if(orderBook == null){
+                return null;
+            }
+
+            List<List<String>> asks = orderBook.getAsks();
+            List<List<String>> bids = orderBook.getBids();
+
+            ListOrderBookResultDTO bookResultDTO = new ListOrderBookResultDTO();
+            bookResultDTO.setAsks(new ArrayList<>());
+            bookResultDTO.setBids(new ArrayList<>());
+            for (List<String> ask : asks) {
+                AskDTO askDTO = new AskDTO();
+                askDTO.setPrice(new BigDecimal(ask.get(0)));
+                askDTO.setTokenAmt(new BigDecimal(ask.get(1)));
+                bookResultDTO.getAsks().add(askDTO);
+            }
+            for (List<String> bid : bids) {
+                BidDTO bidDTO = new BidDTO();
+                bidDTO.setPrice(new BigDecimal(bid.get(0)));
+                bidDTO.setTokenAmt(new BigDecimal(bid.get(1)));
+                bookResultDTO.getBids().add(bidDTO);
+            }
+            return bookResultDTO;
+        } catch (ApiException e) {
+            log.warn("[查询市场深度信息]异常，code={}，message={}", e.getCode(), e.getMessage());
             Throwable sourceCause = e.getCause();
             if (sourceCause instanceof IOException) {
                 throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
@@ -209,8 +263,10 @@ public class GateApi implements IExchangeApi{
         putOrder.setPrice(request.getPrice().toString());
         order.setPut(putOrder);
         try {
-            apiInstance.createSpotPriceTriggeredOrder(order);
-            return new SpotPriceTriggeredOrderResultDTO();
+            TriggerOrderResponse triggeredOrder = apiInstance.createSpotPriceTriggeredOrder(order);
+            SpotPriceTriggeredOrderResultDTO orderResultDTO = new SpotPriceTriggeredOrderResultDTO();
+            orderResultDTO.setOrderId(String.valueOf(triggeredOrder.getId()));
+            return orderResultDTO;
         } catch (ApiException e) {
             log.warn("[创建触发订单]异常，code={}，message={}", e.getCode(), e.getMessage());
             Throwable sourceCause = e.getCause();
@@ -223,7 +279,7 @@ public class GateApi implements IExchangeApi{
     }
 
     /**
-     * 挂现货单
+     * 现货下单
      */
     protected CreateSpotOrderResultDTO createSpotOrderCore(CreateSpotOrderRequestDTO request) throws ExchangeApiException {
         final SpotApi apiInstance = createSpotApi();

@@ -1,4 +1,4 @@
-package io.github.leopard.core.strategy;
+package io.github.leopard.core.strategy.exception;
 
 /*
  * 策略执行异常

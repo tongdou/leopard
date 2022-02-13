@@ -10,8 +10,11 @@ import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
+import org.quartz.ScheduleBuilder;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import io.github.leopard.common.constant.ScheduleConstants;
@@ -64,13 +67,27 @@ public class ScheduleUtils
         String jobGroup = job.getJobGroup();
         JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(getJobKey(jobId, jobGroup)).build();
 
-        // 表达式调度构建器
-        CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule(job.getCronExpression());
-        cronScheduleBuilder = handleCronScheduleMisfirePolicy(job, cronScheduleBuilder);
+        Trigger trigger;
 
-        // 按新的cronExpression表达式构建一个新的trigger
-        CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(getTriggerKey(jobId, jobGroup))
-                .withSchedule(cronScheduleBuilder).build();
+        //策略入口过来的，可能没有设置cron
+        if(StringUtils.isBlank(job.getCronExpression())){
+
+             trigger = TriggerBuilder.newTrigger()
+                    .withIdentity(getTriggerKey(jobId, jobGroup))
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                            .withIntervalInSeconds(1)
+                            .withRepeatCount(1))
+                    .build();
+
+        }else{
+            // 表达式调度构建器
+            CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule(job.getCronExpression());
+            cronScheduleBuilder = handleCronScheduleMisfirePolicy(job, cronScheduleBuilder);
+            // 按新的cronExpression表达式构建一个新的trigger
+            trigger = TriggerBuilder.newTrigger().withIdentity(getTriggerKey(jobId, jobGroup))
+                    .withSchedule(cronScheduleBuilder).build();
+        }
+
 
         // 放入参数，运行时的方法可以获取
         jobDetail.getJobDataMap().put(ScheduleConstants.TASK_PROPERTIES, job);
@@ -90,6 +107,7 @@ public class ScheduleUtils
             scheduler.pauseJob(ScheduleUtils.getJobKey(jobId, jobGroup));
         }
     }
+
 
     /**
      * 设置定时任务策略
