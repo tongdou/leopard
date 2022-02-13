@@ -91,7 +91,7 @@ public class BandTrackingStrategy extends AbstractStrategy {
                 market,
                 orderMarketResultDTO.getCost(),
                 orderMarketResultDTO.getTokenNumber(),
-                BigDecimalUtil.roundingHalfUp(maxPullBack.divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)),
+                maxPullBack.divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP),
                 CandlesticksIntervalEnum.M_5);
     }
 }

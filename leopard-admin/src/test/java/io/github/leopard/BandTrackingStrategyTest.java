@@ -38,10 +38,10 @@ public class BandTrackingStrategyTest extends AbstractBaseTest {
         GateApiExtension apiExtension = GateApiExtension.auth(secretDTO);
 
         StrategyParam<String, String> strategyParam = new StrategyParam<>();
-        strategyParam.put(BandTrackingStrategy.MARKET, "SLP_USDT");
+        strategyParam.put(BandTrackingStrategy.MARKET, "VRA_USDT");
         strategyParam.put(BandTrackingStrategy.USDT_AMT, "1.1");
-        strategyParam.put(BandTrackingStrategy.CANDLESTICK_INTERVAL, CandlesticksIntervalEnum.M_1.getValue());
-        strategyParam.put(BandTrackingStrategy.UP_PERCENT, "0.01");
+        strategyParam.put(BandTrackingStrategy.CANDLESTICK_INTERVAL, CandlesticksIntervalEnum.M_5.getValue());
+        strategyParam.put(BandTrackingStrategy.UP_PERCENT, "1");
         strategyParam.put(BandTrackingStrategy.MAX_PULL_BACK, "5");
 
         strategy.execute(apiExtension, strategyParam);
