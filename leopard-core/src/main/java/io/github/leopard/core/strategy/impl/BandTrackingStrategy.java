@@ -87,27 +87,17 @@ public class BandTrackingStrategy extends AbstractStrategy {
         marketRequestDTO.setUsdtAmt(usdtAmt);
         EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMustOrNull(marketRequestDTO);
 
-        // 有多少个不好算啊  TODO
-        BigDecimal remain;
-        while (true) {
-            SpotAccountResultDTO marketAccount = api.spotAccountMust(market.replaceAll("_USDT",""));
-            if (Objects.nonNull(marketAccount)) {
-                remain = marketAccount.getAvailable();
-                if (remain.compareTo(BigDecimal.ZERO) == 0) {
-                    continue;
-                }
-                String messageBegin = String.format("[%s]准备开启策略，account=%s", market, JSON.toJSONString(marketAccount));
-                log.info(messageBegin);
-                break;
-            }
-            CommonUtils.sleepSeconds(3);
-        }
+        //成本价
+        BigDecimal cost = orderMarketResultDTO.getFillTotal().divide(orderMarketResultDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR);
+
+        //实际的数量
+        final BigDecimal tokenNumber = orderMarketResultDTO.getTokenAmt().subtract(orderMarketResultDTO.getFee());
 
         new BandTrackingStrategySupport(api).syncExecute(
                 market,
-                orderMarketResultDTO.getPrice(),
-                orderMarketResultDTO.getTokenAmt(),
-                BigDecimalUtil.roundingHalfUp(maxPullBack.divide(new BigDecimal(100))),
+                cost,
+                tokenNumber,
+                BigDecimalUtil.roundingHalfUp(maxPullBack.divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)),
                 CandlesticksIntervalEnum.M_5);
     }
 
