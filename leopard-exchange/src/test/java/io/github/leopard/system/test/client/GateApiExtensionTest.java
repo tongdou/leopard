@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import io.github.leopard.exchange.extension.GateApiExtension;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.Result;
-import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.PrevCandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
