@@ -432,14 +432,7 @@ public class GateApiExtension extends GateApi {
         CandlestickResultDTO todayFirstCandlestickList = fetchTodayFirstCandlestick(market);
         BigDecimal todayOpenPrice = todayFirstCandlestickList.getOpen();
         //当前的k线数据,获取当前价格
-        TickRequestDTO request = new TickRequestDTO();
-        request.setMarket(market);
-        TickResultDTO tickerCore = null;
-        try {
-            tickerCore = getTickerCore(request);
-        } catch (ExchangeApiException e) {
-            CommonUtils.sleepSeconds(1);
-        }
+        TickResultDTO tickerCore = getTickerMust(market);
         BigDecimal currentPrice = tickerCore.getLast();
         return CurrencyUtils.todayChangePercentage(todayOpenPrice, currentPrice);
     }

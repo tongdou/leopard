@@ -42,7 +42,6 @@ public class BizMerchantConfigController extends BaseController
     /**
      * 查询商户信息配置列表
      */
-    @RequiresPermissions("merchant:config:list")
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(BizMerchantConfig bizMerchantConfig)
@@ -56,7 +55,6 @@ public class BizMerchantConfigController extends BaseController
     /**
      * 导出商户信息配置列表
      */
-    @RequiresPermissions("merchant:config:export")
     @Log(title = "商户信息配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     @ResponseBody
@@ -79,7 +77,6 @@ public class BizMerchantConfigController extends BaseController
     /**
      * 新增保存商户信息配置
      */
-    @RequiresPermissions("merchant:config:add")
     @Log(title = "商户信息配置", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
@@ -92,7 +89,6 @@ public class BizMerchantConfigController extends BaseController
     /**
      * 修改商户信息配置
      */
-    @RequiresPermissions("merchant:config:edit")
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable("id") Long id, ModelMap mmap)
     {
@@ -104,7 +100,6 @@ public class BizMerchantConfigController extends BaseController
     /**
      * 修改保存商户信息配置
      */
-    @RequiresPermissions("merchant:config:edit")
     @Log(title = "商户信息配置", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
@@ -116,7 +111,6 @@ public class BizMerchantConfigController extends BaseController
     /**
      * 删除商户信息配置
      */
-    @RequiresPermissions("merchant:config:remove")
     @Log(title = "商户信息配置", businessType = BusinessType.DELETE)
     @PostMapping( "/remove")
     @ResponseBody
