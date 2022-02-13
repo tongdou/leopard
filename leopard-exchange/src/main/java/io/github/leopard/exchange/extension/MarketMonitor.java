@@ -22,14 +22,14 @@ public class MarketMonitor {
 
         GateApiExtension api = GateApiExtension.create();
 
-        CandlestickResultDTO prevTicker = api.candlestickRecentMust(market, interval);
+        CandlestickResultDTO prevCandlestick = api.candlestickRecentMust(market, interval);
 
-        String prevDateTimeString = prevTicker.getDateTimeString();
+        String prevDateTimeString = prevCandlestick.getDateTimeString();
         log.info("[{}][{}]开始监控K线，第一次监控所在时间周期为[{}]", market, interval.getValue(), prevDateTimeString);
 
         while (true) {
-            CandlestickResultDTO curTicker = api.candlestickRecentMust(market, interval);
-            String curDateTimeString = curTicker.getDateTimeString();
+            CandlestickResultDTO curCandlestick = api.candlestickRecentMust(market, interval);
+            String curDateTimeString = curCandlestick.getDateTimeString();
 
             if (StringUtils.equals(prevDateTimeString, curDateTimeString)) {
 
@@ -39,12 +39,12 @@ public class MarketMonitor {
                 //因为我们获取有间隔，所以可能会在间隔中缺少数据，这里取按照区间查询拿到最后一个即可
                 PrevCandlestickRequestDTO prevCandlestickRequestDTO = new PrevCandlestickRequestDTO();
                 prevCandlestickRequestDTO.setMarket(market);
-                prevCandlestickRequestDTO.setIntervalEnum(CandlesticksIntervalEnum.M_5);
-                prevCandlestickRequestDTO.setCurDateTime(LocalDateTime.now());
-                prevTicker = api.prevCandlestickMust(prevCandlestickRequestDTO);
+                prevCandlestickRequestDTO.setIntervalEnum(interval);
+                prevCandlestickRequestDTO.setCurDateTime(curCandlestick.getDateTime());
+                prevCandlestick = api.prevCandlestickMust(prevCandlestickRequestDTO);
 
                 prevDateTimeString = curDateTimeString;
-                CandlestickMonitorStatus monitorStatus = changeListener.onchange(prevTicker, curTicker, interval);
+                CandlestickMonitorStatus monitorStatus = changeListener.onchange(prevCandlestick, curCandlestick, interval);
                 if (monitorStatus.equals(CandlestickMonitorStatus.STOP)) {
                     break;
                 }

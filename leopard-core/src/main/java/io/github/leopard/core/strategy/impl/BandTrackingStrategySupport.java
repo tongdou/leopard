@@ -56,7 +56,7 @@ public class BandTrackingStrategySupport {
 
             TickResultDTO tickResultDTO = api.getTickerMust(market);
             BigDecimal lastPrice = tickResultDTO.getLast(); //最新价
-            BigDecimal curHighest = tickResultDTO.getHigh24h(); //当前最高价
+            BigDecimal curHighest = curCandlestick.getHighest(); //当前最高价
 
             String curDateTimeString = curCandlestick.getDateTimeString();
 
@@ -83,7 +83,7 @@ public class BandTrackingStrategySupport {
                 PrevCandlestickRequestDTO prevCandlestickRequestDTO = new PrevCandlestickRequestDTO();
                 prevCandlestickRequestDTO.setMarket(market);
                 prevCandlestickRequestDTO.setIntervalEnum(intervalEnum);
-                prevCandlestickRequestDTO.setCurDateTime(LocalDateTime.now());
+                prevCandlestickRequestDTO.setCurDateTime(curCandlestick.getDateTime());
                 prevCandlestick = api.prevCandlestickMust(prevCandlestickRequestDTO);
 
                 //切换可能会出现一个新的最高价 不要错过
@@ -188,8 +188,12 @@ public class BandTrackingStrategySupport {
         log.info("[{}]自动订单创建成功，orderId={}", market, orderResultDTO.getOrderId());
 
         //取消之前的自动订单
-        api.cancelSpotPriceTriggeredOrderMust(prevTriggerOrderId);
-        log.info("[{}]自动订单已取消，prevTriggerOrderId={}", market, prevTriggerOrderId);
+        if (StringUtils.isBlank(prevTriggerOrderId)) {
+            log.info("[{}]第一次执行，不取消自动订单。", market);
+        } else {
+            api.cancelSpotPriceTriggeredOrderMust(prevTriggerOrderId);
+            log.info("[{}]自动订单已取消，prevTriggerOrderId={}", market, prevTriggerOrderId);
+        }
 
         this.prevTriggerOrderId = orderResultDTO.getOrderId(); //下次取消使用
 

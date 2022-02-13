@@ -14,8 +14,8 @@ import lombok.Data;
 public class TickResultDTO implements ToJSON {
 
     private BigDecimal last;
-    private String baseVolume;
-    private String quoteVolume;
+    private BigDecimal baseVolume;
+    private BigDecimal quoteVolume;
     private BigDecimal high24h;
     private BigDecimal low24h;
     private BigDecimal highestBid;

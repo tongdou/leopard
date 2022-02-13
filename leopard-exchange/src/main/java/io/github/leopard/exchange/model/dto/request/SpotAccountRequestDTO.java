@@ -11,5 +11,6 @@ import lombok.Data;
 @Data
 public class SpotAccountRequestDTO implements ToJSON {
 
+    //USDT ETH 不是交易对
     private String currency;
 }

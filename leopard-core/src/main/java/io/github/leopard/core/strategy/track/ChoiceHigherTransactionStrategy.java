@@ -122,7 +122,7 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         request.setMarket(dataResult.getMarket());
         request.setUsdtAmt(new BigDecimal(dataResult.getPurchase_amount()));
         //下单成功
-        EatSpotOrderMarketResultDTO eatSpotOrderMarketResult = api.eatSpotOrderMarketMust(request);
+        EatSpotOrderMarketResultDTO eatSpotOrderMarketResult = api.eatSpotOrderMarketMustOrNull(request);
 
         return eatSpotOrderMarketResult;
     }
