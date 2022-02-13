@@ -181,20 +181,19 @@ public class GateApiExtension extends GateApi {
             if (spotOrderResponse.isSuccess() &&
                     spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)) {
 
-
+                CreateSpotOrderResultDTO data = spotOrderResponse.getData();
                 EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
                 resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
-                resultDTO.setOrderId(spotOrderResponse.getData().getOrderId());
-                //成本价
-                BigDecimal cost = spotOrderResponse.getData().getFillTotal().divide(resultDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR);
-                resultDTO.setCost(cost);
-                resultDTO.setTokenNumber(resultDTO.getTokenAmt().subtract(resultDTO.getFee()));
+                resultDTO.setOrderId(data.getOrderId());
                 //实际的数量
-                 resultDTO.setFillTotal(spotOrderResponse.getData().getFillTotal());
+                resultDTO.setFillTotal(data.getFillTotal());
                 //手续费
-                resultDTO.setFee(spotOrderResponse.getData().getFee());
+                resultDTO.setFee(data.getFee());
+                resultDTO.setTokenNumber(orderRequestDTO.getTokenAmt().subtract(data.getFee()));
+                //成本价
+                resultDTO.setCost(data.getFillTotal().divide(orderRequestDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR));
                 log.info("最新成交价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
             } else {
@@ -216,19 +215,21 @@ public class GateApiExtension extends GateApi {
             if (spotOrderResponse.isSuccess() &&
                     spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)) {
 
+                CreateSpotOrderResultDTO data = spotOrderResponse.getData();
+
                 EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
                 resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
-                resultDTO.setOrderId(spotOrderResponse.getData().getOrderId());
-                //成本价
-                BigDecimal cost = spotOrderResponse.getData().getFillTotal().divide(resultDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR);
-                resultDTO.setCost(cost);
-                resultDTO.setTokenNumber(resultDTO.getTokenAmt().subtract(resultDTO.getFee()));
+                resultDTO.setOrderId(data.getOrderId());
+
                 //实际的数量
-                resultDTO.setFillTotal(spotOrderResponse.getData().getFillTotal());
+                resultDTO.setFillTotal(data.getFillTotal());
                 //手续费
-                resultDTO.setFee(spotOrderResponse.getData().getFee());
+                resultDTO.setFee(data.getFee());
+                resultDTO.setTokenNumber(orderRequestDTO.getTokenAmt().subtract(data.getFee()));
+                //成本价
+                resultDTO.setCost(data.getFillTotal().divide(orderRequestDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR));
                 log.info("卖一价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
             } else {
