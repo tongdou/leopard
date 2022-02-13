@@ -61,6 +61,7 @@ public class BizStrategyUserServiceImpl implements IBizStrategyUserService
      */
     @Override
     public int insertBizStrategyUser(BizStrategyUser bizStrategyUser) throws SchedulerException, TaskException {
+        int i = bizStrategyUserMapper.insertBizStrategyUser(bizStrategyUser);
         bizStrategyUser.setCreateTime(DateUtils.getNowDate());
         //添加一个定时任务
         SysJob job  = new SysJob();
@@ -69,7 +70,7 @@ public class BizStrategyUserServiceImpl implements IBizStrategyUserService
         //corn表达式
         job.setCronExpression(bizStrategyUser.getCronExpression());
         //调用目标字符串 -- 执行方法
-        String invokeTarget ="strategyExecutors.execute('"+bizStrategyUser.getStrategyId()+"')";
+        String invokeTarget ="strategyExecutors.execute('"+bizStrategyUser.getId()+"')";
         job.setInvokeTarget(invokeTarget);
         //计划策略计划策略
         job.setMisfirePolicy("2");
@@ -78,7 +79,7 @@ public class BizStrategyUserServiceImpl implements IBizStrategyUserService
         //允许并发
         job.setConcurrent("0");
         jobService.insertJob(job);
-        return bizStrategyUserMapper.insertBizStrategyUser(bizStrategyUser);
+        return i;
     }
 
     /**

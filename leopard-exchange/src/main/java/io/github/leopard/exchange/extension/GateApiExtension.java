@@ -1,6 +1,10 @@
 package io.github.leopard.exchange.extension;
 
+import io.gate.gateapi.models.Ticker;
+import io.github.leopard.common.constant.CurrencyConstants;
 import io.github.leopard.common.utils.CommonUtils;
+import io.github.leopard.common.utils.CurrencyUtils;
+import io.github.leopard.common.utils.DateUtils;
 import io.github.leopard.exchange.client.GateApi;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
@@ -29,9 +33,14 @@ import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.OrderStatusEnum;
 import io.github.leopard.exchange.model.enums.SideEnum;
 import io.github.leopard.exchange.model.enums.TimeInForceEnum;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -101,9 +110,6 @@ public class GateApiExtension extends GateApi {
     }
 
 
-
-
-
     /**
      * 创建现货触发订单
      */
@@ -155,7 +161,7 @@ public class GateApiExtension extends GateApi {
      */
     public EatSpotOrderMarketResultDTO eatSpotOrderMarketMust(EatSpotOrderMarketRequestDTO request) {
 
-        while (true){
+        while (true) {
             //获取最新成交价
             BigDecimal lastPrice = this.getTickerMust(request.getMarket()).getLast();
 
@@ -166,16 +172,16 @@ public class GateApiExtension extends GateApi {
             orderRequestDTO.setTimeInForceEnum(TimeInForceEnum.IOC);
 
             Result<CreateSpotOrderResultDTO> spotOrderResponse = this.createSpotOrder(orderRequestDTO);
-            if(spotOrderResponse.isSuccess() &&
-                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)){
+            if (spotOrderResponse.isSuccess() &&
+                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)) {
                 EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
                 resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
                 return resultDTO;
-            }else{
+            } else {
                 //TODO 超时查证 否则会循环下单 !!!
-                log.error("最新成交价市价吃单异常，message={}",spotOrderResponse.getMsg());
+                log.error("最新成交价市价吃单异常，message={}", spotOrderResponse.getMsg());
             }
 
             //获取卖一价
@@ -187,16 +193,16 @@ public class GateApiExtension extends GateApi {
             orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 8, BigDecimal.ROUND_HALF_UP));
 
             spotOrderResponse = this.createSpotOrder(orderRequestDTO);
-            if(spotOrderResponse.isSuccess() &&
-                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)){
+            if (spotOrderResponse.isSuccess() &&
+                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)) {
                 EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
                 resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
                 return resultDTO;
-            }else{
+            } else {
                 //TODO 超时查证 否则会循环下单 !!!
-                log.error("卖一价市价吃单异常，message={}",spotOrderResponse.getMsg());
+                log.error("卖一价市价吃单异常，message={}", spotOrderResponse.getMsg());
             }
         }
     }
@@ -325,6 +331,87 @@ public class GateApiExtension extends GateApi {
                 CommonUtils.sleepSeconds(1);
             }
         }
+    }
+
+    /**
+     *
+     */
+    /**
+     * 根据条件查询交易对数据
+     *
+     * @param limit_ranking 总数
+     * @param quote_volume  总交易量金额
+     * @param filterList    过滤的币种
+     * @return
+     */
+    public List<TickResultDTO> fetchRankingTickerList(Integer limit_ranking, BigDecimal quote_volume, List<String> filterList) {
+
+        //获取全部交易对
+        List<TickResultDTO> tickersList = getTickerMust();
+        //过滤条件
+        List<TickResultDTO> tickerFilterList = tickersList.stream()
+                .filter(e -> !filterList.contains(e.getCurrencyPair()))
+                .filter(e -> e.getCurrencyPair().contains(CurrencyConstants.USDT))
+                .sorted(Comparator.comparing(o -> new BigDecimal(o.getQuoteVolume()), Comparator.reverseOrder()))
+                .collect(Collectors.toList());
+        //总交易金额不为空,总数为空
+        if (quote_volume == null && limit_ranking != null) {
+            return tickerFilterList.stream().limit(limit_ranking).collect(Collectors.toList());
+            //总交易金额为空,总数不为空
+        }
+        if (limit_ranking == null && quote_volume != null) {
+            return tickerFilterList.stream().filter(trick ->
+                    new BigDecimal(trick.getQuoteVolume()).compareTo(quote_volume) >= 0
+            ).collect(Collectors.toList());
+            //总交易金额不为空,总数不为空
+        } else if (quote_volume != null && limit_ranking != null) {
+            return tickerFilterList.stream().filter(trick ->
+                    new BigDecimal(trick.getQuoteVolume()).compareTo(quote_volume) >= 0
+            ).limit(limit_ranking).collect(Collectors.toList());
+        }
+        return tickerFilterList;
+    }
+
+    /**
+     * 查询交易对,从0点开始的涨幅数据
+     *
+     * @param market
+     * @return
+     */
+    public BigDecimal fetchCurrencyTodayChangePercentage(String market) {
+        //今天0点的k数据,获取今天开盘价
+        CandlestickResultDTO todayFirstCandlestickList = fetchTodayFirstCandlestick(market);
+        BigDecimal todayOpenPrice = todayFirstCandlestickList.getOpen();
+        //当前的k线数据,获取当前价格
+        TickRequestDTO request = new TickRequestDTO();
+        request.setMarket(market);
+        TickResultDTO tickerCore = null;
+        try {
+            tickerCore = getTickerCore(request);
+        } catch (ExchangeApiException e) {
+            CommonUtils.sleepSeconds(1);
+        }
+        BigDecimal currentPrice = tickerCore.getLast();
+        return CurrencyUtils.todayChangePercentage(todayOpenPrice, currentPrice);
+    }
+
+    /**
+     * 今日0点的第一个k线,获取今日开盘价
+     *
+     * @param market
+     * @return
+     */
+    public CandlestickResultDTO fetchTodayFirstCandlestick(String market) {
+        CandlestickRequestDTO candlestickRequest = new CandlestickRequestDTO();
+        candlestickRequest.setMarket(market);
+        candlestickRequest.setFrom(DateUtils.getLocalDateTime());
+        candlestickRequest.setTo(DateUtils.getLocalDateTime());
+        candlestickRequest.setIntervalEnum(CandlesticksIntervalEnum.S_10);
+        List<CandlestickResultDTO> candlestickList = listCandlestickMust(candlestickRequest);
+        if (CollectionUtils.isNotEmpty(candlestickList)) {
+            return candlestickList.get(0);
+        }
+        return null;
     }
 
 }

@@ -6,6 +6,7 @@ import io.github.leopard.common.core.domain.AjaxResult;
 import io.github.leopard.common.core.page.TableDataInfo;
 import io.github.leopard.common.enums.BusinessType;
 import io.github.leopard.common.exception.job.TaskException;
+import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.system.domain.BizStrategyUser;
 import io.github.leopard.system.service.IBizStrategyUserService;
 import java.util.List;
@@ -70,6 +71,7 @@ public class BizStrategyUserController extends BaseController
     @PostMapping("/add")
     @ResponseBody
     public AjaxResult addSave(BizStrategyUser bizStrategyUser) throws SchedulerException, TaskException {
+        bizStrategyUser.setUid(ShiroUtils.getUserId().toString());
         return toAjax(bizStrategyUserService.insertBizStrategyUser(bizStrategyUser));
     }
 
