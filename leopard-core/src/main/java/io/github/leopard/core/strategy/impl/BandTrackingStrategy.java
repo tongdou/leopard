@@ -1,6 +1,7 @@
 package io.github.leopard.core.strategy.impl;
 
 import com.alibaba.fastjson.JSON;
+import io.github.leopard.common.utils.BigDecimalUtil;
 import io.github.leopard.common.utils.CommonUtils;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.exception.StrategyExecuteException;
@@ -28,11 +29,11 @@ import org.springframework.stereotype.Component;
 @Component("bandTrackingStrategy")
 public class BandTrackingStrategy extends AbstractStrategy {
 
-    private static final String MARKET = "market";
-    private static final String MAX_PULL_BACK = "maxPullBack";
-    private static final String UP_PERCENT = "upPercent";
-    private static final String USDT_AMT = "usdtAmt";
-    private static final String CANDLESTICK_INTERVAL = "candlesticksInterval";
+    public static final String MARKET = "market";
+    public static final String MAX_PULL_BACK = "maxPullBack";
+    public static final String UP_PERCENT = "upPercent";
+    public static final String USDT_AMT = "usdtAmt";
+    public static final String CANDLESTICK_INTERVAL = "candlesticksInterval";
 
 
     @Override
@@ -84,12 +85,12 @@ public class BandTrackingStrategy extends AbstractStrategy {
         marketRequestDTO.setMarket(market);
         marketRequestDTO.setSideEnum(SideEnum.BUY);
         marketRequestDTO.setUsdtAmt(usdtAmt);
-        EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMust(marketRequestDTO);
+        EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMustOrNull(marketRequestDTO);
 
         // 有多少个不好算啊  TODO
         BigDecimal remain;
         while (true) {
-            SpotAccountResultDTO marketAccount = api.spotAccountMust(market);
+            SpotAccountResultDTO marketAccount = api.spotAccountMust(market.replaceAll("_USDT",""));
             if (Objects.nonNull(marketAccount)) {
                 remain = marketAccount.getAvailable();
                 if (remain.compareTo(BigDecimal.ZERO) == 0) {
@@ -101,12 +102,12 @@ public class BandTrackingStrategy extends AbstractStrategy {
             }
             CommonUtils.sleepSeconds(3);
         }
-        
+
         new BandTrackingStrategySupport(api).syncExecute(
                 market,
                 orderMarketResultDTO.getPrice(),
                 orderMarketResultDTO.getTokenAmt(),
-                maxPullBack,
+                BigDecimalUtil.roundingHalfUp(maxPullBack.divide(new BigDecimal(100))),
                 CandlesticksIntervalEnum.M_5);
     }
 

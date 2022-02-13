@@ -30,6 +30,7 @@ public enum ExchangeResultCodeEnum {
     LACK_PARAM(4, "缺少参数"),
     PARAM_ERROR(5, "参数错误"),
     NO_FUNCTION_PROVIDE(6, "不支持的功能"),
+    ORDER_NOT_FOUND(7,"订单未找到"),
     TIMEOUT(100, "通道请求超时"),
 
     ;
@@ -55,7 +56,7 @@ public enum ExchangeResultCodeEnum {
         if (obj == null) {
             return false;
         }
-        if (obj instanceof String) {
+        if (obj instanceof Integer) {
             return this.getCode().equals(obj);
         } else if (obj instanceof ExchangeResultCodeEnum) {
             return this.getCode().equals(((ExchangeResultCodeEnum) obj).getCode());

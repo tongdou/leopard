@@ -1,5 +1,6 @@
 package io.github.leopard.exchange.client;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.gate.gateapi.ApiClient;
 import io.gate.gateapi.ApiException;
@@ -30,6 +31,7 @@ import io.github.leopard.exchange.model.dto.request.CreateSpotOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.CurrencyPairRequestDTO;
 import io.github.leopard.exchange.model.dto.request.ListOrderBookRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
+import io.github.leopard.exchange.model.dto.request.SpotOderQueryRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
 import io.github.leopard.exchange.model.dto.result.CancelSpotPriceTriggeredOrderResultDTO;
@@ -48,6 +50,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -268,7 +271,7 @@ public class GateApi implements IExchangeApi{
             orderResultDTO.setOrderId(String.valueOf(triggeredOrder.getId()));
             return orderResultDTO;
         } catch (ApiException e) {
-            log.warn("[创建触发订单]异常，code={}，message={}", e.getCode(), e.getMessage());
+            log.warn("[创建触发订单]异常，code={}，message={}，order={}", e.getCode(), e.getMessage(),JSON.toJSONString(order));
             Throwable sourceCause = e.getCause();
             if (sourceCause instanceof IOException) {
                 throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
@@ -278,28 +281,56 @@ public class GateApi implements IExchangeApi{
         }
     }
 
+
+    /**
+     * 查询单个订单详情
+     */
+    protected CreateSpotOrderResultDTO spotOderQueryCore(SpotOderQueryRequestDTO sourceRequest) throws ExchangeApiException {
+        final SpotApi apiInstance = createSpotApi();
+        try {
+            Order response = apiInstance.getOrder(sourceRequest.getOrderId(), sourceRequest.getMarket(), StringUtils.EMPTY);
+            CreateSpotOrderResultDTO resultDTO = new CreateSpotOrderResultDTO();
+            resultDTO.setOrderId(response.getId());
+            resultDTO.setOrderStatusEnum(OrderStatusEnum.toEnum(Objects.requireNonNull(response.getStatus()).getValue()));
+            return resultDTO;
+        } catch (ApiException e) {
+            log.warn("[查询单个订单详情]异常，code={}，message={}，request={}", e.getCode(), e.getMessage(), JSON.toJSONString(sourceRequest));
+            if (e.getCode() == 404 && e.getMessage().contains("ORDER_NOT_FOUND")) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.ORDER_NOT_FOUND);
+            }
+            Throwable sourceCause = e.getCause();
+            if (sourceCause instanceof IOException) {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
+            } else {
+                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
+            }
+        }
+    }
+
     /**
      * 现货下单
      */
     protected CreateSpotOrderResultDTO createSpotOrderCore(CreateSpotOrderRequestDTO request) throws ExchangeApiException {
         final SpotApi apiInstance = createSpotApi();
+        Order order = new Order();
         try {
-            Order order = new Order();
             order.setAccount(Order.AccountEnum.SPOT);
             order.setSide(Order.SideEnum.fromValue(request.getSideEnum().getValue()));
             order.setCurrencyPair(request.getMarket());
             order.setAmount(request.getTokenAmt().toString());
             order.setPrice(request.getPrice().toString());
-            order.setAccount(Order.AccountEnum.SPOT);
             order.setText(request.getText());
             order.setTimeInForce(Order.TimeInForceEnum.fromValue(request.getTimeInForceEnum().getValue()));
             Order response = apiInstance.createOrder(order);
 
+            log.info("[现货下单]结束，sourceRequest={}，response={}", JSON.toJSONString(request), JSON.toJSONString(response));
+
             CreateSpotOrderResultDTO resultDTO = new CreateSpotOrderResultDTO();
+            resultDTO.setOrderId(response.getId());
             resultDTO.setOrderStatusEnum(OrderStatusEnum.toEnum(Objects.requireNonNull(response.getStatus()).getValue()));
             return resultDTO;
         } catch (ApiException e) {
-            log.warn("[挂现货单]异常，code={}，message={}", e.getCode(), e.getMessage());
+            log.warn("[现货下单]异常，code={}，message={}，order={}", e.getCode(), e.getMessage(), JSON.toJSONString(order));
             Throwable sourceCause = e.getCause();
             if (sourceCause instanceof IOException) {
                 throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
@@ -376,7 +407,14 @@ public class GateApi implements IExchangeApi{
             }
             Ticker ticker = tickers.get(0);
             TickResultDTO resultDTO = new TickResultDTO();
-            BeanUtils.copyProperties(ticker, resultDTO);
+            resultDTO.setBaseVolume(new BigDecimal(Objects.requireNonNull(ticker.getBaseVolume())));
+            resultDTO.setQuoteVolume(new BigDecimal(Objects.requireNonNull(ticker.getQuoteVolume())));
+            resultDTO.setCurrencyPair(ticker.getCurrencyPair());
+            resultDTO.setLast(new BigDecimal(Objects.requireNonNull(ticker.getLast())));
+            resultDTO.setHigh24h(new BigDecimal(Objects.requireNonNull(ticker.getHigh24h())));
+            resultDTO.setLow24h(new BigDecimal(Objects.requireNonNull(ticker.getLow24h())));
+            resultDTO.setHighestBid(new BigDecimal(Objects.requireNonNull(ticker.getHighestBid())));
+            resultDTO.setLowestAsk(new BigDecimal(Objects.requireNonNull(ticker.getLowestAsk())));
             return resultDTO;
         } catch (ApiException e) {
             log.warn("[获取单个Ticker信息]异常，code={}，message={}", e.getCode(), e.getMessage());

@@ -1,8 +1,10 @@
 package io.github.leopard.exchange.extension;
 
+import com.alibaba.fastjson.JSON;
 import io.github.leopard.common.utils.CommonUtils;
 import io.github.leopard.exchange.client.GateApi;
 import io.github.leopard.exchange.exception.ExchangeApiException;
+import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.Result;
 import io.github.leopard.exchange.model.dto.request.CancelSpotPriceTriggeredOrderRequestDTO;
@@ -13,6 +15,7 @@ import io.github.leopard.exchange.model.dto.request.EatSpotOrderMarketRequestDTO
 import io.github.leopard.exchange.model.dto.request.ListOrderBookRequestDTO;
 import io.github.leopard.exchange.model.dto.request.PrevCandlestickRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
+import io.github.leopard.exchange.model.dto.request.SpotOderQueryRequestDTO;
 import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
 import io.github.leopard.exchange.model.dto.request.TickRequestDTO;
 import io.github.leopard.exchange.model.dto.result.CancelSpotPriceTriggeredOrderResultDTO;
@@ -101,9 +104,6 @@ public class GateApiExtension extends GateApi {
     }
 
 
-
-
-
     /**
      * 创建现货触发订单
      */
@@ -151,54 +151,70 @@ public class GateApiExtension extends GateApi {
     /**
      * 市价吃单（全部成交）
      *
-     * <b>该方法一定会返回结果，未返回前会一直阻塞，该方法不会抛出异常。<b>
+     * <b>到达最大重试次数前都会以市价重试<b>
      */
-    public EatSpotOrderMarketResultDTO eatSpotOrderMarketMust(EatSpotOrderMarketRequestDTO request) {
+    public EatSpotOrderMarketResultDTO eatSpotOrderMarketMustOrNull(EatSpotOrderMarketRequestDTO request) {
 
-        while (true){
+        int cur = 1;
+        while (cur <= request.getRetryMax()) {
             //获取最新成交价
             BigDecimal lastPrice = this.getTickerMust(request.getMarket()).getLast();
 
             CreateSpotOrderRequestDTO orderRequestDTO = new CreateSpotOrderRequestDTO();
             orderRequestDTO.setPrice(lastPrice.add(new BigDecimal("0.00001")));   //加一点钱，排到前面去
-            orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 8, BigDecimal.ROUND_HALF_UP));
+            orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 5, BigDecimal.ROUND_FLOOR));
             orderRequestDTO.setSideEnum(SideEnum.BUY);
             orderRequestDTO.setTimeInForceEnum(TimeInForceEnum.IOC);
+            orderRequestDTO.setMarket(request.getMarket());
+            orderRequestDTO.setText(request.getText());
 
             Result<CreateSpotOrderResultDTO> spotOrderResponse = this.createSpotOrder(orderRequestDTO);
-            if(spotOrderResponse.isSuccess() &&
-                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)){
+
+
+            if (spotOrderResponse.isSuccess() &&
+                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)) {
+
+
                 EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
                 resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
+                resultDTO.setOrderId(spotOrderResponse.getData().getOrderId());
+                log.info("最新成交价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
-            }else{
+            } else {
                 //TODO 超时查证 否则会循环下单 !!!
-                log.error("最新成交价市价吃单异常，message={}",spotOrderResponse.getMsg());
+                log.error("最新成交价吃单异常，message={}", spotOrderResponse.getMsg());
             }
 
             //获取卖一价
             ListOrderBookRequestDTO requestDTO = new ListOrderBookRequestDTO();
+            requestDTO.setMarket(request.getMarket());
             ListOrderBookResultDTO bookResultDTO = listOrderBookMust(requestDTO);
             AskDTO askDTO = bookResultDTO.getAsks().get(0);
 
             orderRequestDTO.setPrice(askDTO.getPrice().add(new BigDecimal("0.00001")));
-            orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 8, BigDecimal.ROUND_HALF_UP));
+            orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 5, BigDecimal.ROUND_FLOOR));
 
             spotOrderResponse = this.createSpotOrder(orderRequestDTO);
-            if(spotOrderResponse.isSuccess() &&
-                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)){
+
+            if (spotOrderResponse.isSuccess() &&
+                    spotOrderResponse.getData().getOrderStatusEnum().equals(OrderStatusEnum.CLOSED)) {
+
                 EatSpotOrderMarketResultDTO resultDTO = new EatSpotOrderMarketResultDTO();
                 resultDTO.setTokenAmt(orderRequestDTO.getTokenAmt());
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
+                resultDTO.setOrderId(spotOrderResponse.getData().getOrderId());
+                log.info("卖一价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
-            }else{
+            } else {
                 //TODO 超时查证 否则会循环下单 !!!
-                log.error("卖一价市价吃单异常，message={}",spotOrderResponse.getMsg());
+                log.error("卖一价吃单异常，message={}", spotOrderResponse.getMsg());
             }
+            cur++;
         }
+        return null;
     }
 
 
@@ -210,6 +226,22 @@ public class GateApiExtension extends GateApi {
             return Result.success(super.createSpotOrderCore(request));
         } catch (ExchangeApiException e) {
             return Result.fail(e.getResultCode());
+        }
+    }
+
+    /**
+     * 查询单个订单详情，不存在时返回null
+     */
+    public CreateSpotOrderResultDTO spotOderQueryMustOrNull(SpotOderQueryRequestDTO sourceRequest) {
+        while (true) {
+            try {
+                return super.spotOderQueryCore(sourceRequest);
+            } catch (ExchangeApiException e) {
+                if (e.getResultCode().equals(ExchangeResultCodeEnum.ORDER_NOT_FOUND)) {
+                    return null;
+                }
+                CommonUtils.sleepSeconds(1);
+            }
         }
     }
 
