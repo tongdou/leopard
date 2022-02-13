@@ -107,6 +107,8 @@ public class Constants
      */
     public static final String[] JOB_WHITELIST_STR = { "com.ruoyi" };
 
+    public  static  final  String ENCRYPTOR ="leopard";
+
     /**
      * 定时任务违规的字符
      */

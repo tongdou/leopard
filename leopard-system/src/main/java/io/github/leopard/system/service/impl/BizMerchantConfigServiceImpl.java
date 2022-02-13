@@ -15,6 +15,7 @@ import io.github.leopard.system.domain.BizMerchantConfig;
 import io.github.leopard.system.mapper.BizMerchantConfigMapper;
 import io.github.leopard.system.service.DictService;
 import io.github.leopard.system.service.IBizMerchantConfigService;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +63,17 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService {
         return bizMerchantConfig;
     }
 
+    @Override
+    public BizMerchantConfig selectBizMerchantConfigByUId(Long uid) {
+        BizMerchantConfig bizMerchantConfig  = new BizMerchantConfig();
+        bizMerchantConfig.setUid(uid);
+        List<BizMerchantConfig> bizMerchantConfigList = bizMerchantConfigMapper.selectBizMerchantConfigList(bizMerchantConfig);
+        if(CollectionUtils.isNotEmpty(bizMerchantConfigList)){
+            return bizMerchantConfigList.get(0);
+        }
+        return null;
+    }
+
     /**
      * 查询商户信息配置列表
      *
@@ -82,9 +94,9 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService {
     @Override
     public int insertBizMerchantConfig(BizMerchantConfig bizMerchantConfig) {
         //秘钥信息加密
-        bizMerchantConfig.setGateApiKey(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateApiKey()));
-        bizMerchantConfig.setGateSecret(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateSecret()));
-        bizMerchantConfig.setWxUid(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getWxUid()));
+        bizMerchantConfig.setGateApiKey(EncryptorUtil.encrypt(bizMerchantConfig.getGateApiKey()));
+        bizMerchantConfig.setGateSecret(EncryptorUtil.encrypt(bizMerchantConfig.getGateSecret()));
+        bizMerchantConfig.setWxUid(EncryptorUtil.encrypt(bizMerchantConfig.getWxUid()));
         bizMerchantConfig.setCreateTime(DateUtils.getNowDate());
         return bizMerchantConfigMapper.insertBizMerchantConfig(bizMerchantConfig);
     }
@@ -98,9 +110,9 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService {
     @Override
     public int updateBizMerchantConfig(BizMerchantConfig bizMerchantConfig) {
         //秘钥信息加密
-        bizMerchantConfig.setGateApiKey(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateApiKey()));
-        bizMerchantConfig.setGateSecret(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getGateSecret()));
-        bizMerchantConfig.setWxUid(EncryptorUtil.stringEncryptor().encrypt(bizMerchantConfig.getWxUid()));
+        bizMerchantConfig.setGateApiKey(EncryptorUtil.encrypt(bizMerchantConfig.getGateApiKey()));
+        bizMerchantConfig.setGateSecret(EncryptorUtil.encrypt(bizMerchantConfig.getGateSecret()));
+        bizMerchantConfig.setWxUid(EncryptorUtil.encrypt(bizMerchantConfig.getWxUid()));
         bizMerchantConfig.setUpdateTime(DateUtils.getNowDate());
         return bizMerchantConfigMapper.updateBizMerchantConfig(bizMerchantConfig);
     }
@@ -114,7 +126,7 @@ public class BizMerchantConfigServiceImpl implements IBizMerchantConfigService {
     public void updateWxUidById(String merchantConfigId, String wxUid) {
         BizMerchantConfig bizMerchantConfig = new BizMerchantConfig();
         bizMerchantConfig.setId(Long.valueOf(merchantConfigId));
-        bizMerchantConfig.setWxUid(EncryptorUtil.stringEncryptor().encrypt(wxUid));
+        bizMerchantConfig.setWxUid(EncryptorUtil.encrypt(wxUid));
         bizMerchantConfigMapper.updateBizMerchantConfig(bizMerchantConfig);
     }
 

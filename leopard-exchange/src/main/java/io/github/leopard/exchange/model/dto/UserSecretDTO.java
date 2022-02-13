@@ -12,7 +12,18 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserSecretDTO {
 
+    /**
+     * gate api key
+     */
     private String key;
+    /**
+     * gate 秘钥
+     */
     private String secret;
+
+    /**
+     * 微信uid
+     */
+    private String wxUid;
 
 }

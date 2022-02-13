@@ -20,6 +20,15 @@ public interface IBizMerchantConfigService
      */
     public BizMerchantConfig selectBizMerchantConfigById(Long id);
 
+
+    /**
+     * 查询商户信息配置 根据uid
+     *
+     * @param uid 用户id
+     * @return 商户信息配置
+     */
+    public BizMerchantConfig selectBizMerchantConfigByUId(Long uid);
+
     /**
      * 查询商户信息配置列表
      * 

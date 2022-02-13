@@ -39,7 +39,7 @@ public class GateApiExtension extends GateApi {
     }
 
     public static GateApiExtension create() {
-        return new GateApiExtension(new UserSecretDTO(StringUtils.EMPTY, StringUtils.EMPTY));
+        return new GateApiExtension(new UserSecretDTO(StringUtils.EMPTY, StringUtils.EMPTY,StringUtils.EMPTY));
     }
 
 

@@ -7,11 +7,11 @@ import io.github.leopard.exchange.extension.GateApiExtension;
 import io.github.leopard.exchange.model.dto.UserSecretDTO;
 import io.github.leopard.system.domain.BizStrategy;
 import io.github.leopard.system.domain.BizStrategyUser;
-import io.github.leopard.system.service.IBizMerchantConfigService;
 import io.github.leopard.system.service.IBizStrategyService;
 import io.github.leopard.system.service.IBizStrategyUserService;
-import java.util.Map;
+
 import javax.annotation.Resource;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -24,15 +24,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class StrategyExecutors {
+public class StrategyExecutors extends IExecutors {
 
 
     @Resource
     private IBizStrategyUserService strategyUserService;
     @Resource
     private IBizStrategyService strategyService;
-    @Resource
-    private IBizMerchantConfigService merchantConfigService;
 
 
     private ApplicationContext springContext;
@@ -75,7 +73,7 @@ public class StrategyExecutors {
         StrategyParam<String, String> params = JSON.parseObject(strategyUser.getConfigJson(), new TypeReference<StrategyParam<String, String>>() {
         });
 
-        UserSecretDTO userSecret = new UserSecretDTO("", "");
+        UserSecretDTO userSecret = buildUserSecret(strategyUser.getUid());
         GateApiExtension client = GateApiExtension.auth(userSecret);
 
 
