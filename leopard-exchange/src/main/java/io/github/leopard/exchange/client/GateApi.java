@@ -328,6 +328,8 @@ public class GateApi implements IExchangeApi{
             CreateSpotOrderResultDTO resultDTO = new CreateSpotOrderResultDTO();
             resultDTO.setOrderId(response.getId());
             resultDTO.setOrderStatusEnum(OrderStatusEnum.toEnum(Objects.requireNonNull(response.getStatus()).getValue()));
+            resultDTO.setFillTotal(new BigDecimal(response.getFilledTotal()));
+            resultDTO.setFee(new BigDecimal(response.getFee()));
             return resultDTO;
         } catch (ApiException e) {
             log.warn("[现货下单]异常，code={}，message={}，order={}", e.getCode(), e.getMessage(), JSON.toJSONString(order));

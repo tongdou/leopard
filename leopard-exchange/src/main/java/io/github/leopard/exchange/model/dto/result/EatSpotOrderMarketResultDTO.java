@@ -18,5 +18,9 @@ public class EatSpotOrderMarketResultDTO implements ToJSON {
     private BigDecimal fee;//手续费
     private BigDecimal fillTotal; //已成交金额
     private String orderId;
+    //成本价
+    private BigDecimal cost;
+    //实际的数量
+    private BigDecimal tokenNumber;
 
 }

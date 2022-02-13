@@ -187,6 +187,14 @@ public class GateApiExtension extends GateApi {
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
                 resultDTO.setOrderId(spotOrderResponse.getData().getOrderId());
+                //成本价
+                BigDecimal cost = spotOrderResponse.getData().getFillTotal().divide(resultDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR);
+                resultDTO.setCost(cost);
+                resultDTO.setTokenNumber(resultDTO.getTokenAmt().subtract(resultDTO.getFee()));
+                //实际的数量
+                 resultDTO.setFillTotal(spotOrderResponse.getData().getFillTotal());
+                //手续费
+                resultDTO.setFee(spotOrderResponse.getData().getFee());
                 log.info("最新成交价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
             } else {
@@ -213,6 +221,14 @@ public class GateApiExtension extends GateApi {
                 resultDTO.setPrice(orderRequestDTO.getPrice());
                 resultDTO.setMarket(request.getMarket());
                 resultDTO.setOrderId(spotOrderResponse.getData().getOrderId());
+                //成本价
+                BigDecimal cost = spotOrderResponse.getData().getFillTotal().divide(resultDTO.getTokenAmt(), 5, BigDecimal.ROUND_FLOOR);
+                resultDTO.setCost(cost);
+                resultDTO.setTokenNumber(resultDTO.getTokenAmt().subtract(resultDTO.getFee()));
+                //实际的数量
+                resultDTO.setFillTotal(spotOrderResponse.getData().getFillTotal());
+                //手续费
+                resultDTO.setFee(spotOrderResponse.getData().getFee());
                 log.info("卖一价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
             } else {

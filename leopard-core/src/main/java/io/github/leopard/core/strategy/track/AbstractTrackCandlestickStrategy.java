@@ -67,7 +67,6 @@ public abstract class AbstractTrackCandlestickStrategy<T,S,U> extends AbstractSt
                 e.printStackTrace();
             }
         });
-
     }
 
     /**

@@ -1,32 +1,27 @@
 package io.github.leopard.core.strategy.track;
 
 import com.alibaba.fastjson.JSON;
-import io.gate.gateapi.models.SpotAccount;
-import io.gate.gateapi.models.SpotPricePutOrder;
-import io.gate.gateapi.models.Ticker;
 import io.github.leopard.common.constant.CurrencyConstants;
+import io.github.leopard.common.utils.BigDecimalUtil;
 import io.github.leopard.common.utils.StringUtils;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.exception.StrategyExecuteException;
+import io.github.leopard.core.strategy.impl.BandTrackingStrategySupport;
 import io.github.leopard.core.strategy.model.ChoiceHigherTransactionParamDTO;
 import io.github.leopard.core.strategy.model.TrackTransactionDTO;
 import io.github.leopard.exchange.client.IExchangeApi;
 import io.github.leopard.exchange.extension.GateApiExtension;
 import io.github.leopard.exchange.model.dto.request.EatSpotOrderMarketRequestDTO;
-import io.github.leopard.exchange.model.dto.request.SpotAccountRequestDTO;
-import io.github.leopard.exchange.model.dto.request.SpotPriceTriggeredOrderRequestDTO;
-import io.github.leopard.exchange.model.dto.result.CandlestickResultDTO;
 import io.github.leopard.exchange.model.dto.result.EatSpotOrderMarketResultDTO;
 import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.dto.result.TickResultDTO;
+import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.SideEnum;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -117,14 +112,21 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
 
     @Override
     protected EatSpotOrderMarketResultDTO transactionProcess(TrackTransactionDTO dataResult, GateApiExtension api) {
+        String market = dataResult.getMarket();
         EatSpotOrderMarketRequestDTO request = new EatSpotOrderMarketRequestDTO();
         request.setSideEnum(SideEnum.BUY);
-        request.setMarket(dataResult.getMarket());
+        request.setMarket(market);
         request.setUsdtAmt(new BigDecimal(dataResult.getPurchase_amount()));
         //下单成功
-        EatSpotOrderMarketResultDTO eatSpotOrderMarketResult = api.eatSpotOrderMarketMustOrNull(request);
-
-        return eatSpotOrderMarketResult;
+        EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMustOrNull(request);
+        //
+      /*  new BandTrackingStrategySupport(api).syncExecute(
+                market,
+                orderMarketResultDTO.getCost(),
+                orderMarketResultDTO.getTokenNumber(),
+                BigDecimalUtil.roundingHalfUp(maxPullBack.divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)),
+                CandlesticksIntervalEnum.M_5);*/
+        return orderMarketResultDTO;
     }
 
     @Override
