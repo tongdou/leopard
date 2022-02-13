@@ -67,8 +67,7 @@ public class BandTrackingStrategy extends AbstractStrategy {
         try {
             this.doLoopBiz(api, market, maxPullBack, usdtAmt);
         } catch (StrategyException e) {
-            log.error("[{}][{}][{}] 策略执行异常[{}]", market, intervalEnum.getValue(), prev.getDateTimeString(),
-                    e.getMsg());
+            log.error("[{}][{}] 策略执行异常[{}]", market, intervalEnum.getValue(), e.getMsg());
         }
 
 
