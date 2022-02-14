@@ -17,6 +17,16 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- 通用工具-->
         <dependency>
             <groupId>io.github.road</groupId>
@@ -26,6 +36,15 @@
             <groupId>io.github.road</groupId>
             <artifactId>leopard-quartz</artifactId>
         </dependency>
+
+
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
 
     </dependencies>
 
