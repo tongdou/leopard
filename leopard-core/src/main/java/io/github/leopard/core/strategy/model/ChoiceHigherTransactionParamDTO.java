@@ -7,12 +7,13 @@ import java.util.List;
  * 追踪买的参数配置类
  * @author meteor
  */
+
 public class ChoiceHigherTransactionParamDTO {
 
     /**
      * 上涨百分比
      */
-    public  String upward_percent;
+    public String upward_percent;
 
     /**
      * 总交易额
@@ -26,7 +27,7 @@ public class ChoiceHigherTransactionParamDTO {
     /**
      * 排名限制
      */
-    public  String limit_ranking;
+    public String limit_ranking;
 
     /**
      * 买入进入 usdt
@@ -36,7 +37,7 @@ public class ChoiceHigherTransactionParamDTO {
     /**
      * 据最高点回撤比例
      */
-    public  String  retreat_ratio;
+    public String retreat_ratio;
 
 
     /**
@@ -50,6 +51,14 @@ public class ChoiceHigherTransactionParamDTO {
 
     public void setUpward_percent(String upward_percent) {
         this.upward_percent = upward_percent;
+    }
+
+    public String getQuote_volume() {
+        return quote_volume;
+    }
+
+    public void setQuote_volume(String quote_volume) {
+        this.quote_volume = quote_volume;
     }
 
     public String getPurchase_amount() {
@@ -92,11 +101,4 @@ public class ChoiceHigherTransactionParamDTO {
         this.filter_list = filter_list;
     }
 
-    public String getQuote_volume() {
-        return quote_volume;
-    }
-
-    public void setQuote_volume(String quote_volume) {
-        this.quote_volume = quote_volume;
-    }
 }
