@@ -65,6 +65,8 @@ public class SpecifyCurrencyWarningMonitor extends AbstractTrackCandlestickStrat
         if (hour_4h_List.contains(hour) && hour_1h_List.contains(minute)) {
             monitoringParamMap.put(param.getString("monitoring_cycle_4h"), param.getString("monitoring_ratio_4h"));
         }
+        //检查币种
+        monitoringParamMap.put("market_list",param.getString("market_list"));
         return monitoringParamMap;
     }
     /**
@@ -105,7 +107,8 @@ public class SpecifyCurrencyWarningMonitor extends AbstractTrackCandlestickStrat
             // 当前周期的K线图数据
             CandlestickRequestDTO request = new CandlestickRequestDTO();
             request.setMarket(market);
-            request.setIntervalEnum(CandlesticksIntervalEnum.toEnum(monitoringCycle));
+            String monitoringCycleValue = monitoringCycle.substring(0, monitoringCycle.length() - 1);
+            request.setIntervalEnum(CandlesticksIntervalEnum.toEnum(monitoringCycleValue));
             request.setLimit(1);
             List<CandlestickResultDTO> candlestickResultList = client.listCandlestickMust(request);
             if(CollectionUtils.isNotEmpty(candlestickResultList)){

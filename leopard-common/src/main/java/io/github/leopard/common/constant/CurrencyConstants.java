@@ -13,6 +13,8 @@ public class CurrencyConstants {
     public static final String ETH = "ETH";
     public static final String STARL = "STARL";
     public static final String USDT = "USDT";
+    public static final String BTC_USDT = "BTC_USDT";
+
     //点卡
     public static final String POINT = "POINT";
     public static final String FORWARD = "FORWARD";

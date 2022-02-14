@@ -81,7 +81,7 @@ public class BTCWarningMonitorStrategy extends AbstractTrackCandlestickStrategy<
     @Override
     protected List<String> fetchCurrencyPriceList(GateApiExtension api, Map<String, String> monitoringParam) {
         List<String> currencyList = new ArrayList<>();
-        currencyList.add(CurrencyConstants.BTC);
+        currencyList.add(CurrencyConstants.BTC_USDT);
         return currencyList;
     }
 
