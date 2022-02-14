@@ -51,11 +51,6 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
     @Override
     protected ChoiceHigherTransactionParamDTO buildMonitoringParam(StrategyParam<String, String> param) {
         ChoiceHigherTransactionParamDTO transactionParam = JSON.parseObject(JSON.toJSONString(param), ChoiceHigherTransactionParamDTO.class);
-        if (CollectionUtils.isEmpty(transactionParam.getFilter_list())) {
-            transactionParam.setFilter_list(CurrencyConstants.FILTER_CURRENCY);
-        } else {
-            transactionParam.getFilter_list().addAll(CurrencyConstants.FILTER_CURRENCY);
-        }
         return transactionParam;
     }
 
@@ -71,7 +66,7 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         //排名
         Integer limit_ranking = StringUtils.isBlank(monitoringParam.getLimit_ranking()) ? null : Integer.parseInt(monitoringParam.getLimit_ranking());
         //总交易量
-        BigDecimal quote_volume = StringUtils.isBlank(monitoringParam.getPurchase_amount()) ? null : new BigDecimal(monitoringParam.getPurchase_amount());
+        BigDecimal quote_volume = StringUtils.isBlank(monitoringParam.getQuote_volume()) ? null : new BigDecimal(monitoringParam.getQuote_volume());
         //过滤的曲线
         List<String> filterList = monitoringParam.getFilter_list();
         List<TickResultDTO> tickResultDTOS = api.fetchRankingTickerList(limit_ranking, quote_volume, filterList);
@@ -91,7 +86,7 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         GateApiExtension client = GateApiExtension.create();
         BigDecimal changePercentage = client.fetchCurrencyTodayChangePercentage(market);
         //预期的涨幅
-        BigDecimal expectChangePercentage = new BigDecimal(monitoringParam.getRetreat_ratio());
+        BigDecimal expectChangePercentage = new BigDecimal(monitoringParam.getUpward_percent());
         //符合预期
         if (changePercentage.compareTo(expectChangePercentage) >= 0) {
             TrackTransactionDTO trackTransactionDTO = new TrackTransactionDTO();

@@ -15,7 +15,7 @@ import io.github.leopard.common.core.text.Convert;
  * @author admin
  * @date 2022-02-12
  */
-@Service
+@Service(value = "bizStrategyService")
 public class BizStrategyServiceImpl implements IBizStrategyService 
 {
     @Autowired
@@ -43,6 +43,11 @@ public class BizStrategyServiceImpl implements IBizStrategyService
     public List<BizStrategy> selectBizStrategyList(BizStrategy bizStrategy)
     {
         return bizStrategyMapper.selectBizStrategyList(bizStrategy);
+    }
+
+    @Override
+    public List<BizStrategy> selectAllBizStrategyList() {
+        return bizStrategyMapper.selectBizStrategyList(new BizStrategy());
     }
 
     /**

@@ -23,13 +23,4 @@ public class CurrencyConstants {
     public static final String LEVERAGED_5S = "5S";
 
     public static final String SYMBOL_ = "_";
-
-    public static List<String> FILTER_CURRENCY = new ArrayList<>();
-    static {
-        FILTER_CURRENCY.add(LEVERAGED_3L);
-        FILTER_CURRENCY.add(LEVERAGED_3S);
-        FILTER_CURRENCY.add(LEVERAGED_5L);
-        FILTER_CURRENCY.add(LEVERAGED_5S);
-    }
-
 }

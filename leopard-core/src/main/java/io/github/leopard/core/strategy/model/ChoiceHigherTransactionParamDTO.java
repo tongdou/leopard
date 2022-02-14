@@ -29,10 +29,6 @@ public class ChoiceHigherTransactionParamDTO {
      */
     public String limit_ranking;
 
-    /**
-     * 买入进入 usdt
-     */
-    public String usdt_amount;
 
     /**
      * 据最高点回撤比例
@@ -75,14 +71,6 @@ public class ChoiceHigherTransactionParamDTO {
 
     public void setLimit_ranking(String limit_ranking) {
         this.limit_ranking = limit_ranking;
-    }
-
-    public String getUsdt_amount() {
-        return usdt_amount;
-    }
-
-    public void setUsdt_amount(String usdt_amount) {
-        this.usdt_amount = usdt_amount;
     }
 
     public String getRetreat_ratio() {

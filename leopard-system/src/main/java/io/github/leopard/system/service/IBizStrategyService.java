@@ -27,6 +27,14 @@ public interface IBizStrategyService
      */
     public List<BizStrategy> selectBizStrategyList(BizStrategy bizStrategy);
 
+
+    /**
+     * 查询全部策略列表
+     *
+     * @return 策略集合
+     */
+    public List<BizStrategy> selectAllBizStrategyList();
+
     /**
      * 新增策略
      * 

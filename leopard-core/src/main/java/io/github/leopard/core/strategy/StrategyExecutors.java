@@ -53,7 +53,7 @@ public class StrategyExecutors extends IExecutors {
             throw new StrategyExecuteException(StrategyResultCodeEnum.NOT_FOUND);
         }
 
-        BizStrategy strategy = this.strategyService.selectBizStrategyById(strategyUser.getId());
+        BizStrategy strategy = this.strategyService.selectBizStrategyById(strategyUser.getStrategyId());
         if (strategy == null) {
             throw new StrategyExecuteException(StrategyResultCodeEnum.NOT_FOUND);
         }

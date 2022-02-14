@@ -400,8 +400,11 @@ public class GateApiExtension extends GateApi {
         List<TickResultDTO> tickersList = getTickerMust();
         //过滤条件
         List<TickResultDTO> tickerFilterList = tickersList.stream()
-                .filter(e -> !filterList.contains(e.getCurrencyPair()))
-                .filter(e -> e.getCurrencyPair().contains(CurrencyConstants.USDT))
+                .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_3S))
+                .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_3L))
+                .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_5S))
+                .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_5L))
+                .filter(e -> e.getCurrencyPair().endsWith(CurrencyConstants.USDT))
                 .sorted(Comparator.comparing(o -> o.getQuoteVolume(), Comparator.reverseOrder()))
                 .collect(Collectors.toList());
         //总交易金额不为空,总数为空
