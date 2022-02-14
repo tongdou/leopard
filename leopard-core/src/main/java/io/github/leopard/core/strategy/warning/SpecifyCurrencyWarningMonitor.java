@@ -172,6 +172,9 @@ public class SpecifyCurrencyWarningMonitor extends AbstractTrackCandlestickStrat
     protected String buildWxMessage(SpecifyCurrencyMonitoringDTO dataResult, EatSpotOrderMarketResultDTO transaction) {
         StringBuffer message = new StringBuffer();
         List<MonitoringBaseResultDTO> dataResultList = dataResult.getMonitoringBaseResultList();
+        if(CollectionUtils.isEmpty(dataResultList)){
+            return  null;
+        }
         //交易对
         String currency = dataResult.getCurrency();
         //当前价格
