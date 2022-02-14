@@ -450,6 +450,7 @@ public class GateApi implements IExchangeApi{
                 resultDTO.setLow24h(NullUtils.ifNullDefaultZero(ticker.getLow24h()));
                 resultDTO.setLowestAsk(NullUtils.ifNullDefaultZero(ticker.getLowestAsk()));
                 resultDTO.setQuoteVolume(NullUtils.ifNullDefaultZero(ticker.getQuoteVolume()));
+                resultDTO.setChangePercentage(NullUtils.ifNullDefaultBlank(ticker.getChangePercentage()));
                 result.add(resultDTO);
             }
             return result;

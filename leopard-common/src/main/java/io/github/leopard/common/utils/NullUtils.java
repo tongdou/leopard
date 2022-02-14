@@ -14,4 +14,11 @@ public class NullUtils {
         return new BigDecimal(val.trim());
     }
 
+
+    public static String ifNullDefaultBlank(String val) {
+        if (StringUtils.isBlank(val)) {
+            return org.apache.commons.lang3.StringUtils.EMPTY;
+        }
+        return val;
+    }
 }
