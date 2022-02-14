@@ -25,7 +25,7 @@ import java.util.*;
  * @author: liuxin79
  * @date: 2022-02-10 11:55
  */
-@Service
+@Service(value = "BTCWarningMonitorStrategy")
 public class BTCWarningMonitorStrategy extends AbstractTrackCandlestickStrategy<Map<String, String>,SpecifyCurrencyMonitoringDTO, EatSpotOrderMarketResultDTO> {
 
     /**
@@ -41,7 +41,7 @@ public class BTCWarningMonitorStrategy extends AbstractTrackCandlestickStrategy<
         Integer minute = DateUtils.getMinute();
 
         //1分钟线
-        monitoringParamMap.put(param.getString("monitoringCycle_1m"),param.getString("monitoring_ratio_1m"));
+        monitoringParamMap.put(param.getString("monitoring_cycle_1m"),param.getString("monitoring_ratio_1m"));
         //5分钟查一次的
         List<Integer> minute_5_List = Arrays.asList(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
         if (minute_5_List.contains(minute)) {

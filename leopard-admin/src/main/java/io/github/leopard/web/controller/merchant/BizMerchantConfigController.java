@@ -9,7 +9,6 @@ import io.github.leopard.common.utils.ShiroUtils;
 import io.github.leopard.common.utils.poi.ExcelUtil;
 import io.github.leopard.system.domain.BizMerchantConfig;
 import io.github.leopard.system.service.IBizMerchantConfigService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -32,7 +31,6 @@ public class BizMerchantConfigController extends BaseController
     @Autowired
     private IBizMerchantConfigService bizMerchantConfigService;
 
-    @RequiresPermissions("merchant:config:view")
     @GetMapping()
     public String config()
     {

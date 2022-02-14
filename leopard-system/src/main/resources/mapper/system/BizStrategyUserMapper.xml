@@ -27,6 +27,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="strategyName != null  and strategyName != ''"> and strategy_name like concat('%', #{strategyName}, '%')</if>
             <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
             <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="uid != null  and uid != ''"> and uid = #{uid}</if>
+
         </where>
     </select>
     

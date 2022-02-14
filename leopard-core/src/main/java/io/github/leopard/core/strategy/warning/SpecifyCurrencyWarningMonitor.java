@@ -24,7 +24,7 @@ import java.util.*;
  * @author: liuxin79
  * @date: 2022-02-10 11:55
  */
-@Service
+@Service(value ="specifyCurrencyWarningMonitor")
 public class SpecifyCurrencyWarningMonitor extends AbstractTrackCandlestickStrategy<Map<String, String>, SpecifyCurrencyMonitoringDTO, EatSpotOrderMarketResultDTO> {
 
 

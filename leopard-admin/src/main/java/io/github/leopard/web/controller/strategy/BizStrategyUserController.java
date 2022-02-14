@@ -50,6 +50,7 @@ public class BizStrategyUserController extends BaseController
     public TableDataInfo list(BizStrategyUser bizStrategyUser)
     {
         startPage();
+        bizStrategyUser.setUid(String.valueOf(ShiroUtils.getUserId()));
         List<BizStrategyUser> list = bizStrategyUserService.selectBizStrategyUserList(bizStrategyUser);
         return getDataTable(list);
     }
