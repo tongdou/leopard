@@ -1,14 +1,18 @@
 package io.github.leopard.core.strategy.track;
 
 import com.alibaba.fastjson.JSON;
+import io.github.leopard.common.constant.CacheConstants;
 import io.github.leopard.common.constant.CurrencyConstants;
 import io.github.leopard.common.utils.BigDecimalUtil;
+import io.github.leopard.common.utils.CacheUtils;
+import io.github.leopard.common.utils.CurrencyUtils;
 import io.github.leopard.common.utils.StringUtils;
 import io.github.leopard.core.handler.WxPusherHandler;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.exception.StrategyExecuteException;
 import io.github.leopard.core.strategy.impl.BandTrackingStrategySupport;
 import io.github.leopard.core.strategy.model.ChoiceHigherTransactionParamDTO;
+import io.github.leopard.core.strategy.model.MonitoringBaseResultDTO;
 import io.github.leopard.core.strategy.model.TrackTransactionDTO;
 import io.github.leopard.exchange.client.IExchangeApi;
 import io.github.leopard.exchange.extension.GateApiExtension;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +36,6 @@ import java.util.stream.Collectors;
  */
 @Component("choiceHigherTrackStrategy")
 public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStrategy<ChoiceHigherTransactionParamDTO, TrackTransactionDTO, EatSpotOrderMarketResultDTO> {
-
 
     @Override
     public void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) throws StrategyExecuteException {
@@ -121,7 +125,12 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         if (spotAccountResultDTO.getAvailable().compareTo(dataResult.getPurchaseAmount()) < 0) {
             return Boolean.FALSE;
         }
-        //TODO 已经买过的不需要再买了
+        String market = dataResult.getMarket();
+
+        //已经买过的不需要再买了
+        if (!Objects.isNull(CacheUtils.get(CacheConstants.MARKET_BUYED + market))) {
+            return Boolean.FALSE;
+        }
         return true;
     }
 
@@ -142,6 +151,8 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         request.setUsdtAmt(trackTransaction.getPurchaseAmount());
         //下单成功
         EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMustOrNull(request);
+        //已经下单的,存入缓存
+        CacheUtils.put(CacheConstants.MARKET_BUYED+market,market);
         //委托卖单
         new BandTrackingStrategySupport(api).syncExecute(
                 market,
@@ -155,6 +166,25 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
 
     @Override
     protected String buildWxMessage(TrackTransactionDTO dataResult, EatSpotOrderMarketResultDTO transaction) {
-        return null;
+        StringBuffer message = new StringBuffer();
+        //交易对
+        String currency = dataResult.getMarket();
+        //订单id
+        String orderId = transaction.getOrderId();
+        //买入价格
+        String price = transaction.getPrice().toString();
+        //成交数量
+        String tokenNumber = transaction.getTokenNumber().stripTrailingZeros().toPlainString();
+        //成本价
+        String cost = transaction.getCost().stripTrailingZeros().toPlainString();
+        //设置标题
+        message.append("<font size=6>追踪策略购买成功[").append(currency).append("]</font> \n ");
+        message.append("买入价格：").append(price).append("\n");
+        message.append("成交数量：").append(tokenNumber).append("\n");
+        message.append("成本价：").append(cost).append("\n");
+        message.append("订单ID：").append(orderId).append("\n");
+        //换行
+        message.append("请密切关注行情走势,数据来源【gate.io】\n");
+        return message.toString();
     }
 }
