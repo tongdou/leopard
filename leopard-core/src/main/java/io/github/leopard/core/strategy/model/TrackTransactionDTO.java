@@ -26,7 +26,13 @@ public class TrackTransactionDTO implements Serializable {
      * 购买金额
      * @return
      */
-    private String purchase_amount;
+    private BigDecimal purchaseAmount;
+
+
+    /**
+     * 据最高点回测比例
+     */
+    public BigDecimal retreatRatio;
 
 
     public String getMarket() {
@@ -45,11 +51,19 @@ public class TrackTransactionDTO implements Serializable {
         isBuy = buy;
     }
 
-    public String getPurchase_amount() {
-        return purchase_amount;
+    public BigDecimal getPurchaseAmount() {
+        return purchaseAmount;
     }
 
-    public void setPurchase_amount(String purchase_amount) {
-        this.purchase_amount = purchase_amount;
+    public void setPurchaseAmount(BigDecimal purchaseAmount) {
+        this.purchaseAmount = purchaseAmount;
+    }
+
+    public BigDecimal getRetreatRatio() {
+        return retreatRatio;
+    }
+
+    public void setRetreatRatio(BigDecimal retreatRatio) {
+        this.retreatRatio = retreatRatio;
     }
 }

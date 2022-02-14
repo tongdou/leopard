@@ -423,7 +423,7 @@ public class GateApiExtension extends GateApi {
     }
 
     /**
-     * 查询交易对,从0点开始的涨幅数据
+     * 查询交易对,从0点开始到当前时间的涨幅数据
      *
      * @param market
      * @return

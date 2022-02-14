@@ -21,4 +21,6 @@ public class TickResultDTO implements ToJSON {
     private BigDecimal highestBid;
     private BigDecimal lowestAsk;
     private String currencyPair;
+    private String changePercentage;
+
 }

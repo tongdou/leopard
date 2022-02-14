@@ -1,13 +1,18 @@
 package io.github.leopard.core.strategy.track;
 
 import com.alibaba.fastjson.JSON;
+import io.github.leopard.common.constant.CacheConstants;
 import io.github.leopard.common.constant.CurrencyConstants;
 import io.github.leopard.common.utils.BigDecimalUtil;
+import io.github.leopard.common.utils.CacheUtils;
+import io.github.leopard.common.utils.CurrencyUtils;
 import io.github.leopard.common.utils.StringUtils;
+import io.github.leopard.core.handler.WxPusherHandler;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.exception.StrategyExecuteException;
 import io.github.leopard.core.strategy.impl.BandTrackingStrategySupport;
 import io.github.leopard.core.strategy.model.ChoiceHigherTransactionParamDTO;
+import io.github.leopard.core.strategy.model.MonitoringBaseResultDTO;
 import io.github.leopard.core.strategy.model.TrackTransactionDTO;
 import io.github.leopard.exchange.client.IExchangeApi;
 import io.github.leopard.exchange.extension.GateApiExtension;
@@ -18,19 +23,19 @@ import io.github.leopard.exchange.model.dto.result.TickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.SideEnum;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- *
- *
  * @author meteor
  */
 @Component("choiceHigherTrackStrategy")
-public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStrategy<TrackTransactionDTO, ChoiceHigherTransactionParamDTO, EatSpotOrderMarketResultDTO>{
+public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStrategy<ChoiceHigherTransactionParamDTO, TrackTransactionDTO, EatSpotOrderMarketResultDTO> {
 
     @Override
     public void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) throws StrategyExecuteException {
@@ -39,15 +44,16 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
 
     /**
      * 构造监控参数
+     *
      * @param param
      * @return
      */
     @Override
     protected ChoiceHigherTransactionParamDTO buildMonitoringParam(StrategyParam<String, String> param) {
-        ChoiceHigherTransactionParamDTO transactionParam = JSON.parseObject(JSON.toJSONString(param),ChoiceHigherTransactionParamDTO.class);
-        if(CollectionUtils.isEmpty(transactionParam.getFilter_list())){
+        ChoiceHigherTransactionParamDTO transactionParam = JSON.parseObject(JSON.toJSONString(param), ChoiceHigherTransactionParamDTO.class);
+        if (CollectionUtils.isEmpty(transactionParam.getFilter_list())) {
             transactionParam.setFilter_list(CurrencyConstants.FILTER_CURRENCY);
-        }else{
+        } else {
             transactionParam.getFilter_list().addAll(CurrencyConstants.FILTER_CURRENCY);
         }
         return transactionParam;
@@ -55,6 +61,7 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
 
     /**
      * 计算需要查询的币种
+     *
      * @param api
      * @param monitoringParam
      * @return
@@ -62,9 +69,9 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
     @Override
     protected List<String> fetchCurrencyPriceList(GateApiExtension api, ChoiceHigherTransactionParamDTO monitoringParam) {
         //排名
-        Integer limit_ranking = StringUtils.isBlank(monitoringParam.getLimit_ranking()) ? null:Integer.parseInt(monitoringParam.getLimit_ranking());
+        Integer limit_ranking = StringUtils.isBlank(monitoringParam.getLimit_ranking()) ? null : Integer.parseInt(monitoringParam.getLimit_ranking());
         //总交易量
-        BigDecimal quote_volume  =  StringUtils.isBlank(monitoringParam.getPurchase_amount()) ? null:new BigDecimal (monitoringParam.getPurchase_amount());
+        BigDecimal quote_volume = StringUtils.isBlank(monitoringParam.getPurchase_amount()) ? null : new BigDecimal(monitoringParam.getPurchase_amount());
         //过滤的曲线
         List<String> filterList = monitoringParam.getFilter_list();
         List<TickResultDTO> tickResultDTOS = api.fetchRankingTickerList(limit_ranking, quote_volume, filterList);
@@ -74,8 +81,9 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
 
     /**
      * 计算查询结果
+     *
      * @param monitoringParam
-     * @param market 市场币种
+     * @param market          市场币种
      * @return
      */
     @Override
@@ -85,59 +93,98 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         //预期的涨幅
         BigDecimal expectChangePercentage = new BigDecimal(monitoringParam.getRetreat_ratio());
         //符合预期
-        if(changePercentage.compareTo(expectChangePercentage)>=0){
+        if (changePercentage.compareTo(expectChangePercentage) >= 0) {
             TrackTransactionDTO trackTransactionDTO = new TrackTransactionDTO();
             trackTransactionDTO.setBuy(Boolean.TRUE);
             trackTransactionDTO.setMarket(market);
-            trackTransactionDTO.setPurchase_amount(monitoringParam.purchase_amount);
+            trackTransactionDTO.setPurchaseAmount(new BigDecimal(monitoringParam.purchase_amount));
+            trackTransactionDTO.setRetreatRatio(new BigDecimal(monitoringParam.getRetreat_ratio()));
             return trackTransactionDTO;
         }
         return null;
     }
 
+
+    /**
+     * 特殊操作
+     *
+     * @param monitoringParam
+     * @param dataResult
+     * @param api
+     * @return
+     */
     @Override
-    protected Boolean specialProcess(TrackTransactionDTO dataResult,GateApiExtension api) {
+    protected Boolean specialProcess(ChoiceHigherTransactionParamDTO monitoringParam, TrackTransactionDTO dataResult, GateApiExtension api) {
         // 计算结果不允许购买
-        if(!dataResult.getBuy()){
+        if (!dataResult.getBuy()) {
             return Boolean.FALSE;
         }
         //判断账户是否有usdt,没用的话就不交易了
         SpotAccountResultDTO spotAccountResultDTO = api.spotAccountMust(CurrencyConstants.USDT);
         //账户金额不够,不交易
-        if(spotAccountResultDTO.getAvailable().compareTo(new BigDecimal(dataResult.getPurchase_amount()))<0){
+        if (spotAccountResultDTO.getAvailable().compareTo(dataResult.getPurchaseAmount()) < 0) {
+            return Boolean.FALSE;
+        }
+        String market = dataResult.getMarket();
+
+        //已经买过的不需要再买了
+        if (!Objects.isNull(CacheUtils.get(CacheConstants.MARKET_BUYED + market))) {
             return Boolean.FALSE;
         }
         return true;
     }
 
+
+    /**
+     * 交易流程
+     *
+     * @param trackTransaction
+     * @param api
+     * @return
+     */
     @Override
-    protected EatSpotOrderMarketResultDTO transactionProcess(TrackTransactionDTO dataResult, GateApiExtension api) {
-        String market = dataResult.getMarket();
+    protected EatSpotOrderMarketResultDTO transactionProcess(TrackTransactionDTO trackTransaction, GateApiExtension api) {
+        String market = trackTransaction.getMarket();
         EatSpotOrderMarketRequestDTO request = new EatSpotOrderMarketRequestDTO();
         request.setSideEnum(SideEnum.BUY);
         request.setMarket(market);
-        request.setUsdtAmt(new BigDecimal(dataResult.getPurchase_amount()));
+        request.setUsdtAmt(trackTransaction.getPurchaseAmount());
         //下单成功
         EatSpotOrderMarketResultDTO orderMarketResultDTO = api.eatSpotOrderMarketMustOrNull(request);
-        //
-      /*  new BandTrackingStrategySupport(api).syncExecute(
+        //已经下单的,存入缓存
+        CacheUtils.put(CacheConstants.MARKET_BUYED+market,market);
+        //委托卖单
+        new BandTrackingStrategySupport(api).syncExecute(
                 market,
                 orderMarketResultDTO.getCost(),
                 orderMarketResultDTO.getTokenNumber(),
-                BigDecimalUtil.roundingHalfUp(maxPullBack.divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)),
-                CandlesticksIntervalEnum.M_5);*/
+                BigDecimalUtil.roundingHalfUp(trackTransaction.getRetreatRatio().divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP)),
+                CandlesticksIntervalEnum.M_5);
         return orderMarketResultDTO;
     }
 
+
     @Override
     protected String buildWxMessage(TrackTransactionDTO dataResult, EatSpotOrderMarketResultDTO transaction) {
-        return null;
+        StringBuffer message = new StringBuffer();
+        //交易对
+        String currency = dataResult.getMarket();
+        //订单id
+        String orderId = transaction.getOrderId();
+        //买入价格
+        String price = transaction.getPrice().toString();
+        //成交数量
+        String tokenNumber = transaction.getTokenNumber().stripTrailingZeros().toPlainString();
+        //成本价
+        String cost = transaction.getCost().stripTrailingZeros().toPlainString();
+        //设置标题
+        message.append("<font size=6>追踪策略购买成功[").append(currency).append("]</font> \n ");
+        message.append("买入价格：").append(price).append("\n");
+        message.append("成交数量：").append(tokenNumber).append("\n");
+        message.append("成本价：").append(cost).append("\n");
+        message.append("订单ID：").append(orderId).append("\n");
+        //换行
+        message.append("请密切关注行情走势,数据来源【gate.io】\n");
+        return message.toString();
     }
-
-    @Override
-    protected void sendWxMessage(String contentMsg) {
-
-    }
-
-
 }

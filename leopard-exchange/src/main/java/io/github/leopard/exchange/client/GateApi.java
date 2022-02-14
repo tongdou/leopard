@@ -417,6 +417,7 @@ public class GateApi implements IExchangeApi{
             resultDTO.setLow24h(new BigDecimal(Objects.requireNonNull(ticker.getLow24h())));
             resultDTO.setHighestBid(new BigDecimal(Objects.requireNonNull(ticker.getHighestBid())));
             resultDTO.setLowestAsk(new BigDecimal(Objects.requireNonNull(ticker.getLowestAsk())));
+            resultDTO.setChangePercentage(ticker.getChangePercentage());
             return resultDTO;
         } catch (ApiException e) {
             log.warn("[获取单个Ticker信息]异常，code={}，message={}", e.getCode(), e.getMessage());

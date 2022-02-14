@@ -3,6 +3,8 @@ package io.github.leopard.core.strategy;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.base.Stopwatch;
+import io.github.leopard.common.constant.Constants;
+import io.github.leopard.common.utils.CurrencyUtils;
 import io.github.leopard.common.utils.StringUtils;
 import io.github.leopard.core.strategy.exception.StrategyExecuteException;
 import io.github.leopard.core.strategy.exception.StrategyResultCodeEnum;
@@ -86,6 +88,7 @@ public class StrategyExecutors extends IExecutors {
 
         Stopwatch started = Stopwatch.createStarted();
         try {
+            params.put(Constants.WX_UID,userSecret.getWxUid());
             strategyInterface.execute(client, params);
         } catch (StrategyExecuteException e) {
             log.error("用户策略执行异常[{}][{}]", JSON.toJSON(strategyUser), e.getMsg());
