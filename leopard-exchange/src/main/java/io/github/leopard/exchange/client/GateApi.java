@@ -440,7 +440,14 @@ public class GateApi implements IExchangeApi{
             List<TickResultDTO> result = new ArrayList<>();
             for (Ticker ticker : tickers) {
                 TickResultDTO resultDTO = new TickResultDTO();
-                BeanUtils.copyProperties(ticker, resultDTO);
+                resultDTO.setBaseVolume(new BigDecimal(Objects.requireNonNull(ticker.getBaseVolume())));
+                resultDTO.setCurrencyPair(ticker.getCurrencyPair());
+                resultDTO.setHigh24h(new BigDecimal(Objects.requireNonNull(ticker.getHigh24h())));
+                resultDTO.setHighestBid(new BigDecimal(Objects.requireNonNull(ticker.getHighestBid())));
+                resultDTO.setLast(new BigDecimal(Objects.requireNonNull(ticker.getLast())));
+                resultDTO.setLow24h(new BigDecimal(Objects.requireNonNull(ticker.getLow24h())));
+                resultDTO.setLowestAsk(new BigDecimal(Objects.requireNonNull(ticker.getLowestAsk())));
+                resultDTO.setQuoteVolume(new BigDecimal(Objects.requireNonNull(ticker.getQuoteVolume())));
                 result.add(resultDTO);
             }
             return result;
