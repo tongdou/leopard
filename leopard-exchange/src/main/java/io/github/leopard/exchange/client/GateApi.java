@@ -21,6 +21,7 @@ import io.gate.gateapi.models.Ticker;
 import io.gate.gateapi.models.TriggerOrderResponse;
 import io.github.leopard.common.exception.ServiceException;
 import io.github.leopard.common.utils.DateFormatEnum;
+import io.github.leopard.common.utils.NullUtils;
 import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.exchange.exception.ExchangeApiException;
 import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
@@ -441,14 +442,14 @@ public class GateApi implements IExchangeApi{
             List<TickResultDTO> result = new ArrayList<>();
             for (Ticker ticker : tickers) {
                 TickResultDTO resultDTO = new TickResultDTO();
-                resultDTO.setBaseVolume(new BigDecimal(Objects.requireNonNull(ticker.getBaseVolume())));
+                resultDTO.setBaseVolume(NullUtils.ifNullDefaultZero(ticker.getBaseVolume()));
                 resultDTO.setCurrencyPair(ticker.getCurrencyPair());
-                resultDTO.setHigh24h(new BigDecimal(Objects.requireNonNull(ticker.getHigh24h())));
-                resultDTO.setHighestBid(new BigDecimal(Objects.requireNonNull(ticker.getHighestBid())));
-                resultDTO.setLast(new BigDecimal(Objects.requireNonNull(ticker.getLast())));
-                resultDTO.setLow24h(new BigDecimal(Objects.requireNonNull(ticker.getLow24h())));
-                resultDTO.setLowestAsk(new BigDecimal(Objects.requireNonNull(ticker.getLowestAsk())));
-                resultDTO.setQuoteVolume(new BigDecimal(Objects.requireNonNull(ticker.getQuoteVolume())));
+                resultDTO.setHigh24h(NullUtils.ifNullDefaultZero(ticker.getHigh24h()));
+                resultDTO.setHighestBid(NullUtils.ifNullDefaultZero(ticker.getHighestBid()));
+                resultDTO.setLast(NullUtils.ifNullDefaultZero(ticker.getLast()));
+                resultDTO.setLow24h(NullUtils.ifNullDefaultZero(ticker.getLow24h()));
+                resultDTO.setLowestAsk(NullUtils.ifNullDefaultZero(ticker.getLowestAsk()));
+                resultDTO.setQuoteVolume(NullUtils.ifNullDefaultZero(ticker.getQuoteVolume()));
                 result.add(resultDTO);
             }
             return result;
