@@ -199,8 +199,13 @@ public class GateApiExtension extends GateApi {
                 log.info("最新成交价吃单结束，resultDTO={}", JSON.toJSONString(resultDTO));
                 return resultDTO;
             } else {
+
                 //TODO 超时查证 否则会循环下单 !!!
-                log.error("最新成交价吃单异常，message={}", spotOrderResponse.getMsg());
+                if( spotOrderResponse.getCode().equals(ExchangeResultCodeEnum.TIMEOUT.getCode())){
+                    log.error("最新成交价吃单异常，请求交易所异常，message={}", spotOrderResponse.getMsg());
+                    break;  //县种植
+                }
+
             }
 
             //获取卖一价
@@ -235,7 +240,10 @@ public class GateApiExtension extends GateApi {
                 return resultDTO;
             } else {
                 //TODO 超时查证 否则会循环下单 !!!
-                log.error("卖一价吃单异常，message={}", spotOrderResponse.getMsg());
+                if( spotOrderResponse.getCode().equals(ExchangeResultCodeEnum.TIMEOUT.getCode())){
+                    log.error("卖一价格吃单异常，请求交易所异常，message={}", spotOrderResponse.getMsg());
+                    break;  //县种植
+                }
             }
             cur++;
         }

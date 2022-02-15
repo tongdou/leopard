@@ -24,6 +24,7 @@ import io.github.leopard.common.utils.DateFormatEnum;
 import io.github.leopard.common.utils.NullUtils;
 import io.github.leopard.common.utils.bean.BeanUtils;
 import io.github.leopard.exchange.exception.ExchangeApiException;
+import io.github.leopard.exchange.exception.ExchangeExceptionTranslator;
 import io.github.leopard.exchange.exception.ExchangeResultCodeEnum;
 import io.github.leopard.exchange.model.dto.ExchangeUserSecretDTO;
 import io.github.leopard.exchange.model.dto.request.CancelSpotPriceTriggeredOrderRequestDTO;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
+import org.omg.PortableServer.THREAD_POLICY_ID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -61,7 +63,7 @@ import org.springframework.util.CollectionUtils;
  *
  * @author <a href="mailto:fuwei13@xdf.cn">pleuvoir</a>
  */
-public class GateApi implements IExchangeApi{
+public class GateApi implements IExchangeApi {
 
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -83,14 +85,9 @@ public class GateApi implements IExchangeApi{
             CurrencyPairResultDTO resultDTO = new CurrencyPairResultDTO();
             BeanUtils.copyProperties(response, resultDTO);
             return resultDTO;
-        } catch (ApiException e) {
-            log.warn("[查询单个币种信息]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询单个币种信息", requestDTO.ToJSON());
+            return null;
         }
     }
 
@@ -109,14 +106,9 @@ public class GateApi implements IExchangeApi{
                 result.add(resultDTO);
             }
             return result;
-        } catch (ApiException e) {
-            log.warn("[查询所有币种信息]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询所有币种信息", StringUtils.EMPTY);
+            return null;
         }
     }
 
@@ -132,7 +124,7 @@ public class GateApi implements IExchangeApi{
                     .limit(requestDTO.getLimit())
                     .withId(requestDTO.isWithId())
                     .execute();
-            if(orderBook == null){
+            if (orderBook == null) {
                 return null;
             }
 
@@ -155,14 +147,9 @@ public class GateApi implements IExchangeApi{
                 bookResultDTO.getBids().add(bidDTO);
             }
             return bookResultDTO;
-        } catch (ApiException e) {
-            log.warn("[查询市场深度信息]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询市场深度信息", JSON.toJSONString(requestDTO));
+            return null;
         }
     }
 
@@ -181,14 +168,9 @@ public class GateApi implements IExchangeApi{
             accountResultDTO.setCurrency(account.getCurrency());
             accountResultDTO.setLocked(new BigDecimal(Objects.requireNonNull(account.getLocked())));
             return accountResultDTO;
-        } catch (ApiException e) {
-            log.warn("[查询现货账户]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询现货账户", JSON.toJSONString(request));
+            return null;
         }
     }
 
@@ -210,14 +192,9 @@ public class GateApi implements IExchangeApi{
                 result.add(accountResultDTO);
             }
             return result;
-        } catch (ApiException e) {
-            log.warn("[查询现货账户]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询现货账户",StringUtils.EMPTY);
+            return null;
         }
     }
 
@@ -225,20 +202,16 @@ public class GateApi implements IExchangeApi{
     /**
      * 取消现货触发订单
      */
-    protected CancelSpotPriceTriggeredOrderResultDTO cancelSpotPriceTriggeredOrderCore(CancelSpotPriceTriggeredOrderRequestDTO requestDTO)
+    protected CancelSpotPriceTriggeredOrderResultDTO cancelSpotPriceTriggeredOrderCore(
+            CancelSpotPriceTriggeredOrderRequestDTO requestDTO)
             throws ExchangeApiException {
         final SpotApi apiInstance = createSpotApi();
         try {
             apiInstance.cancelSpotPriceTriggeredOrder(requestDTO.getOrderId());
             return new CancelSpotPriceTriggeredOrderResultDTO();
-        } catch (ApiException e) {
-            log.warn("[取消现货触发订单]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "取消现货触发订单", JSON.toJSONString(requestDTO));
+            return null;
         }
     }
 
@@ -271,14 +244,9 @@ public class GateApi implements IExchangeApi{
             SpotPriceTriggeredOrderResultDTO orderResultDTO = new SpotPriceTriggeredOrderResultDTO();
             orderResultDTO.setOrderId(String.valueOf(triggeredOrder.getId()));
             return orderResultDTO;
-        } catch (ApiException e) {
-            log.warn("[创建触发订单]异常，code={}，message={}，order={}", e.getCode(), e.getMessage(),JSON.toJSONString(order));
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL, e);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "创建触发订单", JSON.toJSONString(order));
+            return null;
         }
     }
 
@@ -294,17 +262,9 @@ public class GateApi implements IExchangeApi{
             resultDTO.setOrderId(response.getId());
             resultDTO.setOrderStatusEnum(OrderStatusEnum.toEnum(Objects.requireNonNull(response.getStatus()).getValue()));
             return resultDTO;
-        } catch (ApiException e) {
-            log.warn("[查询单个订单详情]异常，code={}，message={}，request={}", e.getCode(), e.getMessage(), JSON.toJSONString(sourceRequest));
-            if (e.getCode() == 404 && e.getMessage().contains("ORDER_NOT_FOUND")) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.ORDER_NOT_FOUND);
-            }
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询单个订单详情", JSON.toJSONString(sourceRequest));
+            return null;
         }
     }
 
@@ -332,14 +292,9 @@ public class GateApi implements IExchangeApi{
             resultDTO.setFillTotal(new BigDecimal(response.getFilledTotal()));
             resultDTO.setFee(new BigDecimal(response.getFee()));
             return resultDTO;
-        } catch (ApiException e) {
-            log.warn("[现货下单]异常，code={}，message={}，order={}", e.getCode(), e.getMessage(), JSON.toJSONString(order));
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "现货下单", JSON.toJSONString(order));
+            return null;
         }
     }
 
@@ -387,14 +342,9 @@ public class GateApi implements IExchangeApi{
                 resultDTO.add(tickDTO);
             }
             return resultDTO;
-        } catch (ApiException e) {
-            log.warn("[查询蜡烛图]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "查询蜡烛图", request.ToJSON());
+            return null;
         }
     }
 
@@ -420,14 +370,9 @@ public class GateApi implements IExchangeApi{
             resultDTO.setLowestAsk(new BigDecimal(Objects.requireNonNull(ticker.getLowestAsk())));
             resultDTO.setChangePercentage(ticker.getChangePercentage());
             return resultDTO;
-        } catch (ApiException e) {
-            log.warn("[获取单个Ticker信息]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "获取单个Ticker信息", requestDTO.ToJSON());
+            return null;
         }
     }
 
@@ -454,14 +399,9 @@ public class GateApi implements IExchangeApi{
                 result.add(resultDTO);
             }
             return result;
-        } catch (ApiException e) {
-            log.warn("[获取所有Ticker信息]异常，code={}，message={}", e.getCode(), e.getMessage());
-            Throwable sourceCause = e.getCause();
-            if (sourceCause instanceof IOException) {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.TIMEOUT);
-            } else {
-                throw new ExchangeApiException(ExchangeResultCodeEnum.FAIL);
-            }
+        } catch (Throwable e) {
+            ExchangeExceptionTranslator.transform(e, "获取所有Ticker信息", StringUtils.EMPTY);
+            return null;
         }
     }
 
