@@ -97,9 +97,9 @@ public class BTCWarningMonitorStrategy extends AbstractTrackCandlestickStrategy<
         //返回计算结果
         SpecifyCurrencyMonitoringDTO specifyCurrencyMonitoring = new SpecifyCurrencyMonitoringDTO();
         List<MonitoringBaseResultDTO> baseResultList = new LinkedList<>();
-        //币种名称
         GateApiExtension client = GateApiExtension.create();
-        //获取当前tick信息
+
+        //获取当前交易对tick信息
         TickResultDTO tickerNow = client.getTickerMust(market);
 
         //循环监控数据
@@ -149,6 +149,15 @@ public class BTCWarningMonitorStrategy extends AbstractTrackCandlestickStrategy<
         return specifyCurrencyMonitoring;
     }
 
+    @Override
+    protected Boolean specialProcess(Map<String, String> monitoringParam, SpecifyCurrencyMonitoringDTO dataResult, GateApiExtension api) {
+        List<MonitoringBaseResultDTO> dataResultList = dataResult.getMonitoringBaseResultList();
+        if(CollectionUtils.isEmpty(dataResultList)){
+            return  Boolean.FALSE;
+        }
+        return  Boolean.TRUE;
+    }
+
     /**
      * 交易流程
      *
@@ -186,27 +195,8 @@ public class BTCWarningMonitorStrategy extends AbstractTrackCandlestickStrategy<
         String color = CurrencyUtils.convertColorValue(first.getFall());
         message.append("<font size=6 color=").append(color).append(">特别提示[").append(currency).append("]可能").append(warnMsg).append("</font> \n ");
         //振幅金额
-        SpecifyCurrencyWarningMonitor.buildMessage(dataResult, message, currentPrice);
-        for (MonitoringBaseResultDTO amplitudeResult : dataResultList) {
-            //是否下跌
-            Boolean isFall = amplitudeResult.getFall();
-            //上涨还是下跌
-            String direction = CurrencyUtils.convertDirection(isFall);
-            //颜色
-            String colorValue = CurrencyUtils.convertColorValue(isFall);
-            //监控周期
-            String monitoringCycle = CurrencyUtils.convertMonitoringCycle(amplitudeResult.getMonitoringCycle());
-            //振幅比例
-            String amplitudeRatio = amplitudeResult.getAmplitudeRatio();
-
-            String amplitudeAmount = amplitudeResult.getAmplitudeAmount();
-            //涨还是跌
-            message.append("<font size=4 color=").append(colorValue).append(">").append(monitoringCycle).append(direction).append("</font>\n ");
-            message.append(direction).append("百分比：").append(amplitudeRatio).append("\n");
-            message.append(direction).append("金额：$").append(amplitudeAmount).append(" \n");
-            //换行
-            message.append("<br/>");
-        }
+        SpecifyCurrencyWarningMonitor.buildMessageTitle(dataResult, message, currentPrice);
+        SpecifyCurrencyWarningMonitor.buildMessageContent(message, dataResultList);
         message.append("<b><font color=red>市场变化剧烈, 请密切关注行情走势。</font></b>\n");
         message.append("数据来源【gate.io】");
         return message.toString();

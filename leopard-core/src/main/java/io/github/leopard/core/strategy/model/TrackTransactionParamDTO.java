@@ -4,11 +4,11 @@ import java.util.List;
 
 /**
  *
- * 追踪买的参数配置类
+ * 追踪买卖的参数配置类
  * @author meteor
  */
 
-public class ChoiceHigherTransactionParamDTO {
+public class TrackTransactionParamDTO {
 
     /**
      * 上涨百分比
@@ -37,9 +37,14 @@ public class ChoiceHigherTransactionParamDTO {
 
 
     /**
-     * 需要过滤的币种,可以为空
+     * 需要过滤的交易对,可以为空
      */
-    private List<String> filter_list;
+    private List<String> filter_market;
+
+    /**
+     * 指定交易对,可以为空
+     */
+    private List<String> special_market;
 
     public String getUpward_percent() {
         return upward_percent;
@@ -81,12 +86,19 @@ public class ChoiceHigherTransactionParamDTO {
         this.retreat_ratio = retreat_ratio;
     }
 
-    public List<String> getFilter_list() {
-        return filter_list;
+    public List<String> getFilter_market() {
+        return filter_market;
     }
 
-    public void setFilter_list(List<String> filter_list) {
-        this.filter_list = filter_list;
+    public void setFilter_market(List<String> filter_market) {
+        this.filter_market = filter_market;
     }
 
+    public List<String> getSpecial_market() {
+        return special_market;
+    }
+
+    public void setSpecial_market(List<String> special_market) {
+        this.special_market = special_market;
+    }
 }

@@ -168,7 +168,9 @@ public class GateApiExtension extends GateApi {
             BigDecimal lastPrice = this.getTickerMust(request.getMarket()).getLast();
 
             CreateSpotOrderRequestDTO orderRequestDTO = new CreateSpotOrderRequestDTO();
-            orderRequestDTO.setPrice(lastPrice.add(new BigDecimal("0.00001")));   //加一点钱，排到前面去
+            //加一点钱，排到前面去
+
+            orderRequestDTO.setPrice(lastPrice.multiply(BigDecimal.ONE.add(request.getSlipPoint())));
             orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 5, BigDecimal.ROUND_FLOOR));
             orderRequestDTO.setSideEnum(SideEnum.BUY);
             orderRequestDTO.setTimeInForceEnum(TimeInForceEnum.IOC);
@@ -206,8 +208,7 @@ public class GateApiExtension extends GateApi {
             requestDTO.setMarket(request.getMarket());
             ListOrderBookResultDTO bookResultDTO = listOrderBookMust(requestDTO);
             AskDTO askDTO = bookResultDTO.getAsks().get(0);
-
-            orderRequestDTO.setPrice(askDTO.getPrice().add(new BigDecimal("0.00001")));
+            orderRequestDTO.setPrice(askDTO.getPrice().multiply(BigDecimal.ONE.add(request.getSlipPoint())));
             orderRequestDTO.setTokenAmt(request.getUsdtAmt().divide(orderRequestDTO.getPrice(), 5, BigDecimal.ROUND_FLOOR));
 
             spotOrderResponse = this.createSpotOrder(orderRequestDTO);
@@ -391,18 +392,20 @@ public class GateApiExtension extends GateApi {
      *
      * @param limit_ranking 总数
      * @param quote_volume  总交易量金额
-     * @param filterList    过滤的币种
+     * @param filterMarket    过滤的交易对
      * @return
      */
-    public List<TickResultDTO> fetchRankingTickerList(Integer limit_ranking, BigDecimal quote_volume, List<String> filterList) {
+    public List<TickResultDTO> fetchRankingTickerList(Integer limit_ranking, BigDecimal quote_volume, List<String> filterMarket) {
 
         //获取全部交易对
         List<TickResultDTO> tickersList = getTickerMust();
         //过滤条件
         List<TickResultDTO> tickerFilterList = tickersList.stream()
+                .filter(e -> !filterMarket.contains(e.getCurrencyPair()))
                 .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_3S))
                 .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_3L))
                 .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_5S))
+                .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_5L))
                 .filter(e -> !e.getCurrencyPair().contains(CurrencyConstants.LEVERAGED_5L))
                 .filter(e -> e.getCurrencyPair().endsWith(CurrencyConstants.USDT))
                 .sorted(Comparator.comparing(o -> o.getQuoteVolume(), Comparator.reverseOrder()))

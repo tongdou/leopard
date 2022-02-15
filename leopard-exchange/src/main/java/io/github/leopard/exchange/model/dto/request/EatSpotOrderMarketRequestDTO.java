@@ -17,5 +17,11 @@ public class EatSpotOrderMarketRequestDTO {
     private SideEnum sideEnum; //委托方向
     private String text;
     private Integer retryMax = 10; //重试次数
+    /**
+     * 滑点
+     */
+    private BigDecimal slipPoint = BigDecimal.ONE.divide(new BigDecimal(1000));
+
+
 
 }

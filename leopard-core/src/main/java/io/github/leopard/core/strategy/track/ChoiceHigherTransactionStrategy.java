@@ -5,11 +5,10 @@ import io.github.leopard.common.constant.CacheConstants;
 import io.github.leopard.common.constant.CurrencyConstants;
 import io.github.leopard.common.utils.BigDecimalUtil;
 import io.github.leopard.common.utils.CacheUtils;
-import io.github.leopard.common.utils.StringUtils;
 import io.github.leopard.core.strategy.StrategyParam;
 import io.github.leopard.core.strategy.exception.StrategyExecuteException;
 import io.github.leopard.core.strategy.impl.BandTrackingStrategySupport;
-import io.github.leopard.core.strategy.model.ChoiceHigherTransactionParamDTO;
+import io.github.leopard.core.strategy.model.TrackTransactionParamDTO;
 import io.github.leopard.core.strategy.model.TrackTransactionDTO;
 import io.github.leopard.exchange.client.IExchangeApi;
 import io.github.leopard.exchange.extension.GateApiExtension;
@@ -19,6 +18,9 @@ import io.github.leopard.exchange.model.dto.result.SpotAccountResultDTO;
 import io.github.leopard.exchange.model.dto.result.TickResultDTO;
 import io.github.leopard.exchange.model.enums.CandlesticksIntervalEnum;
 import io.github.leopard.exchange.model.enums.SideEnum;
+import io.github.leopard.system.service.DictService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -27,11 +29,15 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
+ * 条件筛选交易市场追踪买卖
+ *
  * @author meteor
  */
 @Component("choiceHigherTrackStrategy")
-public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStrategy<ChoiceHigherTransactionParamDTO, TrackTransactionDTO, EatSpotOrderMarketResultDTO> {
+public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStrategy<TrackTransactionParamDTO, TrackTransactionDTO, EatSpotOrderMarketResultDTO> {
 
+    @Autowired
+    private DictService dictService;
     @Override
     public void execute(IExchangeApi exchangeApi, StrategyParam<String, String> param) throws StrategyExecuteException {
         super.execute(exchangeApi, param);
@@ -44,9 +50,8 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
      * @return
      */
     @Override
-    protected ChoiceHigherTransactionParamDTO buildMonitoringParam(StrategyParam<String, String> param) {
-        ChoiceHigherTransactionParamDTO transactionParam = JSON.parseObject(JSON.toJSONString(param), ChoiceHigherTransactionParamDTO.class);
-        return transactionParam;
+    protected TrackTransactionParamDTO buildMonitoringParam(StrategyParam<String, String> param) {
+        return JSON.parseObject(JSON.toJSONString(param), TrackTransactionParamDTO.class);
     }
 
     /**
@@ -57,14 +62,15 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
      * @return
      */
     @Override
-    protected List<String> fetchCurrencyPriceList(GateApiExtension api, ChoiceHigherTransactionParamDTO monitoringParam) {
+    protected List<String> fetchCurrencyPriceList(GateApiExtension api, TrackTransactionParamDTO monitoringParam) {
         //排名
         Integer limit_ranking = StringUtils.isBlank(monitoringParam.getLimit_ranking()) ? null : Integer.parseInt(monitoringParam.getLimit_ranking());
         //总交易量
         BigDecimal quote_volume = StringUtils.isBlank(monitoringParam.getQuote_volume()) ? null : new BigDecimal(monitoringParam.getQuote_volume());
-        //过滤的曲线
-        List<String> filterList = monitoringParam.getFilter_list();
-        List<TickResultDTO> tickResultDTOS = api.fetchRankingTickerList(limit_ranking, quote_volume, filterList);
+        //过滤的交易对
+        List<String> filterMarket = monitoringParam.getFilter_market();
+
+        List<TickResultDTO> tickResultDTOS = api.fetchRankingTickerList(limit_ranking, quote_volume, filterMarket);
         List<String> currencyList = tickResultDTOS.stream().map(TickResultDTO::getCurrencyPair).collect(Collectors.toList());
         return currencyList;
     }
@@ -77,7 +83,7 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
      * @return
      */
     @Override
-    protected TrackTransactionDTO computeMonitoringResult(ChoiceHigherTransactionParamDTO monitoringParam, String market) {
+    protected TrackTransactionDTO computeMonitoringResult(TrackTransactionParamDTO monitoringParam, String market) {
         GateApiExtension client = GateApiExtension.create();
         BigDecimal changePercentage = client.fetchCurrencyTodayChangePercentage(market);
         //预期的涨幅
@@ -104,7 +110,7 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
      * @return
      */
     @Override
-    protected Boolean specialProcess(ChoiceHigherTransactionParamDTO monitoringParam, TrackTransactionDTO dataResult, GateApiExtension api) {
+    protected Boolean specialProcess(TrackTransactionParamDTO monitoringParam, TrackTransactionDTO dataResult, GateApiExtension api) {
         // 计算结果不允许购买
         if (!dataResult.getBuy()) {
             return Boolean.FALSE;
@@ -119,6 +125,12 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
 
         //已经买过的不需要再买了
         if (!Objects.isNull(CacheUtils.get(CacheConstants.MARKET_BUYED + market))) {
+            return Boolean.FALSE;
+        }
+        //BTC跌到下限 不能交易
+        String btcDownWardPercent = dictService.getLabel("leopard_global_param", "btc_down_ward_percent");
+        BigDecimal todayChangePercentage = api.fetchCurrencyTodayChangePercentage(CurrencyConstants.BTC_USDT);
+        if(StringUtils.isNotBlank(btcDownWardPercent)&& todayChangePercentage.compareTo(new BigDecimal(btcDownWardPercent))<0){
             return Boolean.FALSE;
         }
         return true;
@@ -165,13 +177,11 @@ public class ChoiceHigherTransactionStrategy extends AbstractTrackCandlestickStr
         String price = transaction.getPrice().toString();
         //成交数量
         String tokenNumber = transaction.getTokenNumber().stripTrailingZeros().toPlainString();
-        //成本价
-        String cost = transaction.getCost().stripTrailingZeros().toPlainString();
         //设置标题
-        message.append("<font size=6>追踪策略购买成功[").append(currency).append("]</font> \n ");
+        message.append("<font size=6>追踪策略购买成功</font> \n ");
+        message.append("<font size=6 color=red > [").append(currency).append("]</font> \n ");
         message.append("买入价格：").append(price).append("\n");
         message.append("成交数量：").append(tokenNumber).append("\n");
-        message.append("成本价：").append(cost).append("\n");
         message.append("订单ID：").append(orderId).append("\n");
         //换行
         message.append("请密切关注行情走势,数据来源【gate.io】\n");

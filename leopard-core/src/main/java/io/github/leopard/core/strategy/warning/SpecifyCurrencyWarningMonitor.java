@@ -149,6 +149,15 @@ public class SpecifyCurrencyWarningMonitor extends AbstractTrackCandlestickStrat
         return specifyCurrencyMonitoring;
     }
 
+    @Override
+    protected Boolean specialProcess(Map<String, String> monitoringParam, SpecifyCurrencyMonitoringDTO dataResult, GateApiExtension api) {
+        List<MonitoringBaseResultDTO> dataResultList = dataResult.getMonitoringBaseResultList();
+        if(CollectionUtils.isEmpty(dataResultList)){
+            return  Boolean.FALSE;
+        }
+        return  Boolean.TRUE;
+    }
+
     /**
      * 交易流程
      *
@@ -183,34 +192,52 @@ public class SpecifyCurrencyWarningMonitor extends AbstractTrackCandlestickStrat
         //设置标题
         message.append("<font size=6>特别关注[").append(currency).append("]</font> \n ");
         //振幅金额
-        buildMessage(dataResult, message, currentPrice);
-        for (MonitoringBaseResultDTO amplitudeResult : dataResultList) {
-            //是否下跌
-            Boolean isFall = amplitudeResult.getFall();
-            String direction = CurrencyUtils.convertDirection(isFall);
-            String colorValue = CurrencyUtils.convertColorValue(isFall);
-            //监控周期
-            String monitoringCycle = CurrencyUtils.convertMonitoringCycle(amplitudeResult.getMonitoringCycle());
-            //振幅比例
-            String amplitudeRatio = amplitudeResult.getAmplitudeRatio();
-            String amplitudeAmount = amplitudeResult.getAmplitudeAmount();
-            //涨还是跌
-            message.append("<b><font size=4 color=").append(colorValue).append(">").append(monitoringCycle).append(direction).append("</font></b>\n ");
-            message.append(direction).append("百分比：").append(amplitudeRatio).append("\n");
-            message.append(direction).append("金额：$").append(amplitudeAmount).append(" \n");
-            //换行
-            message.append("<br/>");
-        }
+        buildMessageTitle(dataResult, message, currentPrice);
+        buildMessageContent(message, dataResultList);
         message.append("请密切关注行情走势,数据来源【gate.io】\n");
         return message.toString();
     }
 
-    static void buildMessage(SpecifyCurrencyMonitoringDTO dataResult, StringBuffer message, String currentPrice) {
+    /**
+     * 构造消息标题
+     * @param dataResult
+     * @param message
+     * @param currentPrice
+     */
+    static void buildMessageTitle(SpecifyCurrencyMonitoringDTO dataResult, StringBuffer message, String currentPrice) {
         String changePercentageToday = dataResult.getChangePercentageToday();
         String changePercentage24 = dataResult.getChangePercentage24();
         message.append("当前").append("价格：$").append(currentPrice).append(" \n");
         message.append("今日涨幅：").append(changePercentageToday).append(" \n");
         message.append("24h涨幅：").append(changePercentage24).append("% \n");
         message.append("<br/>");
+    }
+
+    /**
+     * 构造消息内容
+     * @param message
+     * @param dataResultList
+     */
+    static void buildMessageContent(StringBuffer message, List<MonitoringBaseResultDTO> dataResultList) {
+        for (MonitoringBaseResultDTO amplitudeResult : dataResultList) {
+            //是否下跌
+            Boolean isFall = amplitudeResult.getFall();
+            //上涨还是下跌
+            String direction = CurrencyUtils.convertDirection(isFall);
+            //颜色
+            String colorValue = CurrencyUtils.convertColorValue(isFall);
+            //监控周期
+            String monitoringCycle = CurrencyUtils.convertMonitoringCycle(amplitudeResult.getMonitoringCycle());
+            //振幅比例
+            String amplitudeRatio = amplitudeResult.getAmplitudeRatio();
+            //振幅金额
+            String amplitudeAmount = amplitudeResult.getAmplitudeAmount();
+            //涨还是跌
+            message.append("<font size=4 color=").append(colorValue).append(">").append(monitoringCycle).append(direction).append("</font>\n ");
+            message.append(direction).append("百分比：").append(amplitudeRatio).append("\n");
+            message.append(direction).append("金额：$").append(amplitudeAmount).append(" \n");
+            //换行
+            message.append("<br/>");
+        }
     }
 }
